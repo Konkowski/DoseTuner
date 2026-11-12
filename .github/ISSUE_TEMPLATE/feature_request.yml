@@ -1,0 +1,14 @@
+name: Feature request
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes: { label: What problem do you want to solve? }
+    validations: { required: true }
+  - type: textarea
+    id: idea
+    attributes: { label: Your idea }
+  - type: textarea
+    id: ops
+    attributes: { label: How would an operator use it?, description: "Keep it simple: what do they tap, what do they see?" }

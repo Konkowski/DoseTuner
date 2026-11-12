@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DoseTuner – self-calibrating dosing setpoints</title>
+<meta name="theme-color" content="#06080a">
+<!--__PWA_HEAD__-->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Chakra+Petch:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Tokens follow the AMA design system: near-black canvas, mint-teal as the one accent (= "proposed"), grey = "now", crimson for alerts. */
+:root{--bg:#08090b;--bg2:#0e1116;--panel:rgba(15,23,42,.55);--solid:#14181d;--deep:#06080a;--line:#1e242b;--line2:#2c343d;--text:#eef1f4;--t2:#9ba6b1;--mute:#6e7882;
+--teal:#2dd4bf;--teal2:#5eead4;--tealbg:rgba(45,212,191,.10);--amber:#f5b53d;--violet:#b08cf0;--amberbg:rgba(245,181,61,.10);--red:#ec4067;--redbg:rgba(236,64,103,.10);--gray:#6e7882;--blue:#4aa3f0;--orange:#f5933d;--shadow:0 2px 10px rgba(0,0,0,.25);
+--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;--head:'Chakra Petch','Inter',system-ui,sans-serif;--sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html{-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);background:var(--bg);background-image:radial-gradient(900px 380px at 75% -8%,rgba(45,212,191,.07),transparent 60%),linear-gradient(rgba(45,212,191,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(45,212,191,.022) 1px,transparent 1px);background-size:auto,24px 24px,24px 24px;color:var(--text);font-size:16px;line-height:1.5;min-height:100vh}
+h1,h2,h3{font-family:var(--head);font-weight:500;letter-spacing:.01em;line-height:1.25}
+h1{font-size:26px;margin:2px 0 6px}h2{font-size:20px;margin:0 0 6px}h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--t2);margin:28px 0 10px}
+p{margin:6px 0}.t2{color:var(--t2)}.mute{color:var(--mute)}.small{font-size:13.5px}.mono{font-family:var(--mono)}.y{color:var(--teal2)}.n2{color:var(--red)}
+button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.top{position:sticky;top:0;z-index:20;background:rgba(6,8,10,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top))}
+.logo{width:30px;height:30px;border:1.5px solid var(--teal);border-radius:8px;display:grid;place-items:center;flex:none}
+.brand{font-family:var(--head);font-weight:600;letter-spacing:.12em;font-size:15px}.sp{flex:1}
+.chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--line2);color:var(--t2);white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}.chip.sim{color:var(--amber);border-color:rgba(245,181,61,.5);background:var(--amberbg)}
+.iconbtn{background:none;border:1px solid var(--line2);border-radius:10px;min-width:40px;height:40px;color:var(--t2);display:grid;place-items:center}
+.steps{position:sticky;top:51px;z-index:19;background:var(--deep);border-bottom:1px solid var(--line);display:flex;overflow-x:auto;scrollbar-width:none;padding:0 6px}.steps::-webkit-scrollbar{display:none}
+.steps button{flex:1 0 auto;background:none;border:0;border-bottom:2px solid transparent;padding:12px;min-height:48px;color:var(--t2);font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;white-space:nowrap;justify-content:center}
+.steps button b{width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:12px;font-weight:600}
+.steps button[aria-current=step]{color:var(--teal);border-bottom-color:var(--teal);font-weight:600}.steps button[aria-current=step] b{background:var(--teal);color:#04201c;border-color:var(--teal)}.steps button:disabled{opacity:.4;cursor:default}
+.strip{background:var(--bg2);border-bottom:1px solid var(--line)}.strip>div{max-width:980px;margin:0 auto;padding:12px 16px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.strip .k{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--teal);text-transform:uppercase}.strip p{margin:2px 0 0;font-size:14px;color:var(--t2);max-width:640px}
+.next{background:var(--tealbg);border:1px solid rgba(45,212,191,.55);color:var(--teal2);border-radius:10px;padding:8px 16px;min-height:44px;font-weight:600;font-size:14px;text-align:left;line-height:1.25}.next small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+main{max-width:980px;margin:0 auto;padding:18px 16px calc(40px + env(safe-area-inset-bottom))}
+.panel{background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+.panel.hot{border-color:rgba(45,212,191,.6);background:linear-gradient(180deg,rgba(45,212,191,.07),var(--panel))}.panel.warn{border-color:rgba(245,181,61,.55)}.panel.bad{border-color:rgba(236,64,103,.55)}
+.panel.flat{padding:12px 0 8px}.panel.flat>.pad{padding:0 16px}.panel h2.ph{font-size:16px;margin:0 0 2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 18px;border-radius:8px;border:1px solid var(--line2);background:rgba(30,41,59,.6);font-weight:600;font-size:15px;letter-spacing:.02em}.btn:hover{border-color:rgba(94,234,212,.45);color:var(--teal2)}.btn:active{transform:translateY(1px)}
+.btn.pri{background:linear-gradient(180deg,var(--teal2),var(--teal));border-color:rgba(94,234,212,.6);color:#04121d;box-shadow:0 1px 6px rgba(45,212,191,.35)}.btn.pri:hover{color:#04121d;box-shadow:0 2px 12px rgba(45,212,191,.5)}.btn.block{display:flex;width:100%;margin:8px 0}.btn.ghost{background:none}.btn.link{border:0;background:none;color:var(--teal);min-height:40px;padding:6px 2px;font-weight:500}
+.grid{display:grid;gap:12px}.g2{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}.grid>*{min-width:0}
+@media(min-width:760px){.g2{grid-template-columns:1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}.hgrid{grid-template-columns:1fr 1fr!important}}
+.choice{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:12px;padding:18px}.choice.main{border-color:rgba(45,212,191,.6)}.choice h2{display:flex;gap:10px;align-items:center}.choice p{color:var(--t2);font-size:14.5px}
+.tile{background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);border-radius:12px;padding:14px}.tile.hot{border-color:rgba(45,212,191,.6)}.tile .lab{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t2)}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:6px;margin-top:10px}.ba small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.ba>div{min-width:0}.ba .n{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--t2)}.ba .p{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--teal2)}.ba .ar{color:var(--mute);padding-bottom:4px}.unit{font-size:12px;color:var(--mute);font-weight:500;margin-left:2px}
+.delta{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:99px;font-family:var(--mono)}.delta.good{background:var(--tealbg);color:var(--teal2)}.delta.flat{background:rgba(110,120,130,.15);color:var(--t2)}.delta.bad{background:var(--amberbg);color:var(--amber)}
+.goal{font-size:12.5px;color:var(--mute);margin-top:6px}.goal b{color:var(--t2);font-family:var(--mono);font-weight:600}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;border:1px solid transparent}
+.s-ok{color:var(--teal2);background:var(--tealbg);border-color:rgba(45,212,191,.35)}.s-adjust{color:var(--amber);background:var(--amberbg);border-color:rgba(245,181,61,.4)}.s-check{color:var(--red);background:var(--redbg);border-color:rgba(236,64,103,.45)}.s-wait{color:var(--t2);background:rgba(110,120,130,.14);border-color:var(--line2)}
+.hcard{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line2);box-shadow:var(--shadow);border-left:4px solid var(--gray);border-radius:12px;padding:14px 14px 12px}
+.hcard.s-ok{border-left-color:var(--teal)}.hcard.s-adjust{border-left-color:var(--amber)}.hcard.s-check{border-left-color:var(--red)}
+.hcard .top2{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.hcard .hn{font-family:var(--head);font-size:18px;font-weight:600}
+.setp{font-family:var(--mono);font-size:20px;font-weight:600;margin:2px 0 6px}.setp .arrow{color:var(--teal);margin:0 6px}.setp .d{font-size:13px;color:var(--amber);margin-left:8px}
+.follow{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;font-size:12.5px;color:var(--t2);align-items:center}.follow span.tag{border:1px solid rgba(45,212,191,.45);color:var(--teal2);background:var(--tealbg);border-radius:99px;padding:1px 9px;font-weight:600}
+.cmp{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:14px;align-items:center}.cmp .v{font-family:var(--mono);text-align:right;white-space:nowrap}.cmp .v b{color:var(--teal2);font-weight:600}.cmp .v i{font-style:normal;color:var(--mute);margin:0 4px}
+.mini{margin:8px 0 2px}.mini .tr{position:relative;height:7px;border-radius:4px;background:var(--line);margin:3px 0}.mini .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}.mini .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55}
+.reason{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:13.5px;color:var(--t2)}.reason b{color:var(--text);font-weight:600}.more{color:var(--teal);font-size:13px;font-weight:600;margin-top:6px;display:block}
+table.t{width:100%;border-collapse:collapse;font-size:14px}table.t th{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);text-align:left;padding:8px;background:var(--deep);font-weight:600}
+table.t td{padding:9px 8px;border-top:1px solid var(--line);vertical-align:middle}table.t td.r,table.t th.r{text-align:right}table.t .mono{white-space:nowrap}table.t td b.p{color:var(--teal2);font-family:var(--mono)}
+.bvp{display:grid;grid-template-columns:1.25fr 1fr 1fr;font-size:14.5px}.bvp>div{padding:9px 8px;border-top:1px solid var(--line)}.bvp .h{border-top:0;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.bvp .h.p{color:var(--teal)}.bvp .n{font-family:var(--mono);color:var(--t2);text-align:right}.bvp .p{font-family:var(--mono);color:var(--teal2);font-weight:600;text-align:right}.bvp .h.n,.bvp .h.p{text-align:right}
+ol.trace{list-style:none;counter-reset:s;padding:0;margin:4px 0}ol.trace li{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}ol.trace li:first-child{border-top:0}
+ol.trace li::before{counter-increment:s;content:counter(s);width:26px;height:26px;border-radius:50%;border:1px solid rgba(45,212,191,.6);color:var(--teal2);display:grid;place-items:center;font-size:13px;font-weight:600;font-family:var(--mono)}
+ol.trace b{display:block;font-size:14px;color:var(--text);margin-bottom:1px}ol.trace span{font-size:14.5px;color:var(--t2)}
+ul.checks{list-style:none}ul.checks li{display:flex;gap:10px;padding:7px 0;font-size:14.5px}ul.checks .m{font-weight:800;min-width:18px}
+svg.ch{display:block;width:100%;height:auto;overflow:visible}svg.ch text{fill:var(--t2);font-family:var(--sans);font-size:11px}svg.ch .mono{font-family:var(--mono)}svg.ch .tx{fill:var(--text)}svg.scrub{touch-action:pan-y;cursor:crosshair;-webkit-user-select:none;user-select:none}svg.tolsvg{touch-action:none;-webkit-user-select:none;user-select:none}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;color:var(--t2);margin-top:8px}.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}.legend i.sq{height:10px;width:10px;border-radius:2px;vertical-align:-1px}.legend i.dot{height:9px;width:9px;border-radius:50%;vertical-align:-1px}
+.ro{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--t2);padding:8px 12px;margin:0 0 8px;background:var(--deep);border:1px solid var(--line);border-radius:10px;min-height:56px}.ro b{color:var(--text);font-family:var(--mono);font-weight:600}.ro .k{color:var(--text);font-weight:600;flex-basis:100%}
+.ro .g{display:inline-flex;align-items:center;gap:6px}.ro .g i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.seg{display:inline-flex;background:var(--deep);border:1px solid var(--line2);border-radius:10px;padding:3px;gap:3px;margin:6px 0}.seg button{background:none;border:0;border-radius:8px;padding:8px 14px;min-height:40px;font-size:14px;font-weight:600;color:var(--t2)}.seg button[aria-pressed=true]{background:var(--teal);color:#04201c}
+.bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--teal)}
+.infl{display:grid;grid-template-columns:96px 1fr;gap:4px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.infl:first-child{border-top:0}.infl .nm{font-weight:600;font-size:14px}.infl .tr{height:10px;border-radius:5px;background:var(--line);position:relative;overflow:hidden}.infl .tr i{position:absolute;left:0;top:0;bottom:0;background:var(--blue);border-radius:5px}
+.infl .tx{grid-column:1/-1;font-size:13.5px;color:var(--t2)}.infl .tx b{color:var(--text);font-family:var(--mono);font-weight:600}.infl .pct{font-family:var(--mono);font-size:13px;color:var(--text);margin-left:8px}
+pre.law{font-family:var(--mono);font-size:13px;line-height:1.7;background:var(--deep);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;white-space:pre;color:var(--t2)}pre.law b{color:var(--teal2);font-weight:600}
+input[type=number],select,textarea{font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:9px 10px;min-height:44px}input[type=number]{width:112px}textarea{width:100%;min-height:90px}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:10px 0}.row label{flex:1;font-size:15px}
+details{margin:8px 0}summary{cursor:pointer;min-height:40px;padding:8px 0;font-weight:600;font-size:14.5px}
+.banner{background:var(--amberbg);border:1px solid rgba(245,181,61,.5);color:var(--amber);border-radius:10px;padding:8px 12px;font-size:13.5px;font-weight:600;margin:10px 0}
+.toast{pointer-events:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));background:var(--text);color:var(--deep);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:500;z-index:50;max-width:90%}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60}.modal .panel{width:100%;max-width:560px;margin:0}
+.progress{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:14px 0}.progress i{display:block;height:100%;background:var(--teal);transition:width .15s}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.steplist{counter-reset:q;list-style:none}.steplist li{counter-increment:q;display:grid;grid-template-columns:30px 1fr;gap:10px;padding:8px 0}
+.steplist li::before{content:counter(q);width:26px;height:26px;border-radius:50%;background:var(--teal);color:#04201c;font-weight:700;font-size:13px;display:grid;place-items:center}
+.stats3{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--t2);margin-top:6px}.stats3 b{font-family:var(--mono);color:var(--text);font-weight:600}
+.small.mute,p.mute{color:#86919c}
+.verdict{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;vertical-align:middle}
+.v-good{color:var(--teal2);background:var(--tealbg)}.v-mid{color:var(--amber);background:var(--amberbg)}.v-bad{color:var(--red);background:var(--redbg)}
+.todo{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-color:rgba(245,147,61,.6);background:linear-gradient(180deg,rgba(245,147,61,.08),var(--panel))}.todo b{font-size:16px}.todo p{margin:2px 0 0}
+.help{font-size:13px;color:var(--t2);background:var(--deep);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0}.help b{color:var(--text)}
+@media(min-width:760px){h1{font-size:30px}}@media(max-width:759px){.hide-m{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2dd4bf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3.2 4.6-5.5 7.4-5.5 10.6a5.5 5.5 0 0 0 11 0C17.5 10.4 15.2 7.6 12 3z"/><path d="M9.5 14.2h5"/></svg></div>
+  <div class="brand">DOSE TUNER</div><div class="sp"></div><span class="chip" id="chip" hidden></span>
+  <button class="iconbtn" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+</header>
+<nav class="steps" id="steps" aria-label="Steps"></nav>
+<div class="strip" id="strip"><div></div></div>
+<main id="app"></main>
+<input type="file" id="file" hidden accept=".csv,.txt,.tsv,text/csv,text/plain,text/tab-separated-values">
+<script>
+/*__CORE__*/
+</script>
+<script>
+'use strict';
+const C = DoseCore;
+const $ = s => document.querySelector(s), app = $('#app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const f0 = x => Math.round(x).toLocaleString('en-US'), f1 = x => (Math.round(x * 10) / 10).toFixed(1), f2 = x => (Math.round(x * 100) / 100).toFixed(2), pc = x => (x * 100).toFixed(x > 0 && x < 0.1 ? 1 : 0);
+const sg = (x, d) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(d == null ? 1 : d), cpf = x => x >= 5 ? '5+' : x.toFixed(2), clampv = (x, a, b) => Math.min(b, Math.max(a, x));
+const sig3 = x => { const v = +Number(x).toPrecision(3); return Math.abs(v) >= 1000 ? f0(v) : String(v); };
+const ST = { view: 'data', settings: Object.assign({}, C.DEFAULTS), parsed: null, map: {}, tol: null, info: null, records: [], results: [], summary: null, simulated: false, headSel: null, busy: null, log: [], saved: null, fileName: '', pasted: '', mode: 'full', dev: null, stale: false, rawText: '', unit: 'pct', unitOverride: 'auto' };
+const STATUS = { ok: 'On target', adjust: 'Adjust', check: 'Check head', wait: 'Collecting data' };
+const VARS = { Q: 'Flow', rho: 'Density', T: 'Temperature', P: 'Pressure' };
+const PCT = () => ST.unit === 'pct';
+const lvl = a => PCT() ? (100 - a).toFixed(2) + ' %' : f1(a) + ' ms';      /* a = internal value; in % mode the closing point is 100 - a */
+const lvn = a => PCT() ? (100 - a).toFixed(2) : f1(a), dlt = d => PCT() ? sg(-d, 2) : sg(d, 1), UT = () => PCT() ? '%' : 'ms';
+const AV = p => PCT() ? p.c : p.a, AD = p => PCT() ? p.cDyn : p.aDyn, AN = r => PCT() ? r.cNow : r.aNow, AW = r => PCT() ? r.cNew : r.aNew;
+const UNM = () => PCT() ? 'closing point' : 'anticipation', KC = t => PCT() ? t.kc : t.k;
+const detect = () => ST.unitOverride !== 'auto' ? ST.unitOverride : C.detectUnit(ST.parsed, ST.map);
+const PA = r => (ST.mode === 'fixed' ? (r.afterFixed || r.after) : r.after), SA = sm => (ST.mode === 'fixed' ? sm.afterFixed : sm.after);
+const PW = (s) => (ST.mode === 'fixed' ? s.wFix : s.wDyn);
+
+/* ---------- storage (best effort; the phone may clear it) ---------- */
+function idb() { return new Promise((res, rej) => { try { const q = indexedDB.open('dosetuner', 1); q.onupgradeneeded = () => q.result.createObjectStore('kv'); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); } catch (e) { rej(e); } }); }
+async function kvSet(k, v) { try { const db = await idb(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { return false; } }
+async function kvGet(k) { try { const db = await idb(); return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); } catch (e) { return null; } }
+async function kvDel(k) { try { const db = await idb(); await new Promise(res => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete = res; tx.onerror = res; }); } catch (e) {} }
+const snap = () => ({ settings: ST.settings, tol: ST.tol, map: ST.map, log: ST.log });
+function saveSession() { if (ST.rawText && ST.rawText.length < 40e6) kvSet('session', Object.assign({ text: ST.rawText, name: ST.fileName, savedAt: Date.now() }, snap())); }
+function saveMeta() { kvGet('session').then(s => { if (s) kvSet('session', Object.assign(s, snap())); }); }
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2800); }
+function showText(title, text) {
+  const m = document.createElement('div'); m.className = 'modal'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+  m.innerHTML = '<div class="panel"><h2>' + esc(title) + '</h2><textarea readonly rows="10" id="mt" class="mono">' + esc(text) + '</textarea><div class="row"><button class="btn pri" id="mc">Copy</button><button class="btn" id="mx">Close</button></div><p class="small mute">If Copy is blocked on your phone, press and hold the text to select and copy it.</p></div>';
+  document.body.appendChild(m); const ta = m.querySelector('#mt'); ta.focus(); ta.select();
+  m.querySelector('#mx').onclick = () => m.remove();
+  m.querySelector('#mc').onclick = async () => { try { await navigator.clipboard.writeText(text); toast('Copied'); } catch (e) { ta.focus(); ta.select(); try { document.execCommand('copy'); toast('Copied'); } catch (e2) { toast('Select the text and copy it manually'); } } };
+}
+
+/* ---------- names and units from the CSV header ---------- */
+const UNITS = { ml: 'ml', s: 's', g: 'g', c: '°C', degc: '°C', bar: 'bar', mbar: 'mbar', kpa: 'kPa', pa: 'Pa', psi: 'psi', ms: 'ms', kg: 'kg', l: 'l', mls: 'ml/s', gml: 'g/ml', lmin: 'l/min' };
+function colName(k) { return ST.parsed && ST.map[k] != null ? ST.parsed.header[ST.map[k]] : VARS[k] || k; }
+function unitOf(k) { const h = colName(k), br = h.match(/[\[(]([^\])]+)[\])]/); if (br) return br[1]; const tok = h.toLowerCase().split(/[\s_\-.\/]+/).filter(Boolean), u = []; while (tok.length > 1 && UNITS[tok[tok.length - 1]]) u.unshift(UNITS[tok.pop()]); return u.join('/'); }
+const vName = k => VARS[k] || k;
+
+/* ---------- pipeline ---------- */
+function loadText(text, name, simulated) {
+  const parsed = C.parseCSV(text);
+  if (!parsed.rows.length || parsed.header.length < 3) { toast('That does not look like a CSV table'); return false; }
+  Object.assign(ST, { parsed, map: C.guessMapping(parsed.header), unitOverride: 'auto', fileName: name, simulated: !!simulated, rawText: text, results: [], summary: null, stale: false, tol: null, dev: null, view: 'data' });
+  ST.unit = detect(); if (!C.missingRequired(ST.map, ST.unit).length) prepare(); return true;
+}
+function prepare() {
+  ST.unit = detect(); const b = C.buildRecords(ST.parsed, ST.map, { delay: 0, state: null, unit: ST.unit }); ST.info = b.info;
+  const t1 = C.median(b.records.map(r => r.t1)), t2 = C.median(b.records.map(r => r.t2));
+  if (!ST.tol) ST.tol = { t1: +t1.toFixed(2), t2: +t2.toFixed(2), file: { t1: +t1.toFixed(2), t2: +t2.toFixed(2) }, user: false };
+  ST.dev = b.records.filter(r => isFinite(r.w)).map(r => r.w - r.target);
+}
+function rebuild() { ST.unit = detect(); const o = { delay: 0, state: null, unit: ST.unit }; if (ST.tol && ST.tol.user) { o.t1Abs = ST.tol.t1; o.t2Abs = ST.tol.t2; } const b = C.buildRecords(ST.parsed, ST.map, o); ST.records = b.records; ST.info = b.info; }
+async function runAnalysis() {
+  rebuild(); ST.view = 'busy'; ST.busy = { i: 0, n: 1 }; render();
+  const by = C.groupByHead(ST.records), heads = Object.keys(by).map(Number).sort((a, b) => a - b), out = [];
+  if (!heads.length) { ST.view = 'data'; ST.busy = null; render(); toast('No usable rows – check the column mapping'); return; }
+  for (let i = 0; i < heads.length; i++) {
+    ST.busy = { i, n: heads.length, head: heads[i] }; render(); await new Promise(r => setTimeout(r, 25));
+    by[heads[i]].sort((a, b) => a.idx - b.idx);
+    try { out.push(C.analyzeHead(by[heads[i]], ST.settings)); } catch (e) { out.push({ head: heads[i], status: 'wait', mode: 'none', action: 'none', headline: 'Could not analyse this head', advice: String(e.message || e), checks: [], vars: [], reasons: [], stats: { n: 0 }, aNow: NaN, aNew: NaN, delta: 0, trace: [], reason: 'Analysis error.' }); }
+  }
+  ST.results = out; ST.summary = C.summarize(out); ST.busy = null; ST.stale = false; ST.view = 'result'; render(); window.scrollTo(0, 0);
+  if (!ST.simulated) saveSession();
+}
+async function runDemo() {
+  const p = C.simulateHistory({ seed: 5, nCycles: 300, scenario: 'dynamic', swing: 1.5, saw: 0.7, closeUnit: 'pct' });
+  if (loadText(p.toCSV({ plcAligned: true }), 'Simulated demo machine', true)) await runAnalysis();
+}
+
+/* ---------- chart helpers ---------- */
+const CH = {};   // scrub charts registry
+const CW = () => Math.max(280, Math.min(app.clientWidth - 32, 948) - 34);
+function niceStep(range, n) { const r = range / n, p = Math.pow(10, Math.floor(Math.log10(r))), m = r / p; return (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * p; }
+function ticks(lo, hi, n) { const st = niceStep(hi - lo, n), out = []; for (let v = Math.ceil(lo / st) * st; v <= hi + 1e-9; v += st) out.push(+v.toFixed(10)); return out; }
+const svgOpen = (W, H, aria, cls, extra) => '<svg class="ch ' + (cls || '') + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(aria) + '" ' + (extra || '') + '>';
+const legendItem = (kind, color, label) => '<span><i class="' + kind + '" style="background:' + color + '"></i>' + label + '</span>';
+
+/* Process window: where each head's bottles fall, now vs proposed (average ± 2σ), against the tolerance limits */
+function chartWindow(rs) {
+  const rows = rs.filter(r => r.before && r.status !== 'wait'); if (!rows.length) return '';
+  const W = CW(), L = 34, R = 92, T = 34, bh = 7, blk = 36, H = T + rows.length * blk + 6, t1 = rows[0].stats.t1, t2 = rows[0].stats.t2;
+  const ext = Math.max(...rows.flatMap(r => [r.before, PA(r)].map(s => Math.abs(s.err) + 2 * s.sd))), lim = Math.max(t1 * 1.35, Math.min(ext * 1.1, t2 * 1.25)), x = v => L + (W - L - R) * (0.5 + clampv(v, -lim, lim) / (2 * lim));
+  let g = '<rect x="' + x(-t1) + '" y="' + (T - 6) + '" width="' + (x(t1) - x(-t1)) + '" height="' + (rows.length * blk + 4) + '" fill="var(--teal)" opacity=".08"/>';
+  [-t2, t2].filter(v => Math.abs(v) <= lim).forEach(v => { g += '<line x1="' + x(v) + '" x2="' + x(v) + '" y1="' + (T - 6) + '" y2="' + (H - 2) + '" stroke="var(--amber)" opacity=".75"/>'; });
+  g += '<line x1="' + x(-t1) + '" x2="' + x(-t1) + '" y1="' + (T - 6) + '" y2="' + (H - 2) + '" stroke="var(--teal)" opacity=".5"/><line x1="' + x(t1) + '" x2="' + x(t1) + '" y1="' + (T - 6) + '" y2="' + (H - 2) + '" stroke="var(--teal)" opacity=".5"/><line x1="' + x(0) + '" x2="' + x(0) + '" y1="' + (T - 8) + '" y2="' + (H - 2) + '" stroke="var(--text)" opacity=".6"/>';
+  [[-t1, '−T1'], [0, 'target'], [t1, '+T1']].forEach(a => { g += '<text x="' + x(a[0]) + '" y="' + (T - 14) + '" text-anchor="middle">' + a[1] + '</text>'; });
+  if (t2 <= lim) g += '<text x="' + x(t2) + '" y="' + (T - 14) + '" text-anchor="middle" style="fill:var(--amber)">+T2</text><text x="' + x(-t2) + '" y="' + (T - 14) + '" text-anchor="middle" style="fill:var(--amber)">−T2</text>';
+  g += '<text x="' + L + '" y="' + (H + 12) + '" style="font-size:10.5px">← lighter</text><text x="' + (W - R) + '" y="' + (H + 12) + '" text-anchor="end" style="font-size:10.5px">heavier →</text>';
+  rows.forEach((r, i) => { const y = T + i * blk, b = r.before, a = PA(r), i0 = ST.results.indexOf(r);
+    const one = (s, yy, col) => '<rect x="' + x(s.err - 2 * s.sd) + '" y="' + yy + '" width="' + Math.max(2, x(s.err + 2 * s.sd) - x(s.err - 2 * s.sd)) + '" height="' + bh + '" rx="3.5" fill="' + col + '" opacity="' + (col === 'var(--teal)' ? 1 : .8) + '"/><circle cx="' + x(s.err) + '" cy="' + (yy + bh / 2) + '" r="4.5" fill="' + col + '" stroke="var(--panel)" stroke-width="2"/>';
+    g += '<g data-act="head" data-i="' + i0 + '" style="cursor:pointer"><rect x="0" y="' + (y - 4) + '" width="' + W + '" height="' + (blk - 2) + '" fill="transparent"/><text x="' + (L - 8) + '" y="' + (y + 16) + '" text-anchor="end" class="mono tx" style="font-size:12px">H' + r.head + '</text>' + one(b, y + 2, 'var(--gray)') + one(a, y + 15, 'var(--teal)') +
+      '<text x="' + (W - R + 10) + '" y="' + (y + 11) + '" class="mono" style="font-size:11px">Cpk ' + cpf(b.cpk) + '</text><text x="' + (W - R + 10) + '" y="' + (y + 24) + '" class="mono tx" style="font-size:11px">→ ' + cpf(a.cpk) + '</text></g>'; });
+  return svgOpen(W, H + 16, 'Process window of each head: average and plus or minus two standard deviations, now and proposed, against tolerance limits') + g + '</svg>' +
+    '<div class="legend">' + legendItem('dot', 'var(--gray)', 'Now (dot = average, bar = ±2σ)') + legendItem('dot', 'var(--teal)', 'Proposed') + legendItem('sq', 'rgba(45,212,191,.25)', 'Inside T1') + legendItem('', 'var(--amber)', 'T2') + '</div>';
+}
+
+/* Capability index per head: now, proposed (bars) and the goal after all rounds (ring) */
+function chartCpk(rs) {
+  const rows = rs.filter(r => r.before && r.status !== 'wait'); if (!rows.length) return '';
+  const W = CW(), L = 34, R = 78, T = 22, blk = 30, H = T + rows.length * blk + 8, mx = clampv(Math.ceil(Math.max(2, ...rows.map(r => Math.max(r.before.cpk, PA(r).cpk, r.goal ? r.goal.cpk : 0))) * 2) / 2, 2, 4), x = v => L + (W - L - R) * Math.min(v, mx) / mx;
+  let g = ticks(0, mx, 4).map(v => '<line x1="' + x(v) + '" x2="' + x(v) + '" y1="' + (T - 4) + '" y2="' + (H - 6) + '" stroke="var(--line)"/><text x="' + x(v) + '" y="' + (T - 9) + '" text-anchor="middle" style="font-size:10.5px">' + v + '</text>').join('');
+  [[1, '1.0'], [1.33, '1.33']].forEach(a => { g += '<line x1="' + x(a[0]) + '" x2="' + x(a[0]) + '" y1="' + (T - 4) + '" y2="' + (H - 6) + '" stroke="' + (a[0] > 1 ? 'var(--teal)' : 'var(--amber)') + '" opacity=".75"/>'; });
+  rows.forEach((r, i) => { const y = T + i * blk, b = r.before, a = PA(r), i0 = ST.results.indexOf(r), bar = (v, yy, col) => '<rect x="' + L + '" y="' + yy + '" width="' + Math.max(2, x(v) - L) + '" height="8" rx="4" fill="' + col + '"/>';
+    g += '<g data-act="head" data-i="' + i0 + '" style="cursor:pointer"><rect x="0" y="' + (y - 3) + '" width="' + W + '" height="' + (blk - 2) + '" fill="transparent"/><text x="' + (L - 8) + '" y="' + (y + 15) + '" text-anchor="end" class="mono tx" style="font-size:12px">H' + r.head + '</text>' + bar(b.cpk, y + 1, 'var(--gray)') + bar(a.cpk, y + 12, 'var(--teal)') +
+      '<text x="' + (W - R + 10) + '" y="' + (y + 15) + '" class="mono" style="font-size:11px">' + cpf(b.cpk) + ' <tspan class="tx" style="font-weight:600">→ ' + cpf(a.cpk) + '</tspan></text>' +
+      (r.goal ? '<circle cx="' + x(r.goal.cpk) + '" cy="' + (y + 15) + '" r="5" fill="none" stroke="var(--text)" stroke-width="1.6"/>' : '') + '</g>'; });
+  g += '<text x="' + x(1) + '" y="' + (H) + '" text-anchor="middle" style="font-size:10px;fill:var(--amber)">1.0</text><text x="' + x(1.33) + '" y="' + (H) + '" text-anchor="start" style="font-size:10px;fill:var(--teal2)"> 1.33 capable</text>';
+  return svgOpen(W, H + 8, 'Process capability index Cpk of each head, now, proposed and goal') + g + '</svg><div class="legend">' + legendItem('sq', 'var(--gray)', 'Now') + legendItem('sq', 'var(--teal)', 'Proposed') + '<span><i class="dot" style="background:none;border:2px solid var(--text)"></i>Goal after all rounds</span></div>';
+}
+
+/* Where the squared weight error comes from: offset from target, conditions (can be compensated), unexplained spread */
+function decompSum(rs, key) {
+  const t = { bias2: 0, cond: 0, noise: 0 }; let w = 0;
+  rs.forEach(r => { if (!r.before || r.status === 'wait') return; const n = r.before.n; let d = r.decomp && r.decomp[key]; if (!d) { const s = key === 'before' ? r.before : (key === 'goal' ? r.goal : PA(r)); d = { bias2: s.err * s.err, cond: 0, noise: s.sd * s.sd }; }
+    t.bias2 += n * d.bias2; t.cond += n * d.cond; t.noise += n * d.noise; w += n; });
+  return w ? { bias2: t.bias2 / w, cond: t.cond / w, noise: t.noise / w } : null;
+}
+function chartDecomp(rows) {
+  rows = rows.filter(r => r.d); if (!rows.length) return '';
+  const W = CW(), L = 78, R = 100, T = 8, blk = 40, H = T + rows.length * blk + 4, tot = d => d.bias2 + d.cond + d.noise, mx = Math.max(...rows.map(r => tot(r.d))) || 1, x = v => (W - L - R) * v / mx;
+  let g = '';
+  rows.forEach((r, i) => { const y = T + i * blk; g += '<text x="' + (L - 10) + '" y="' + (y + 21) + '" text-anchor="end" class="tx" style="font-size:12px;font-weight:600">' + esc(r.label) + '</text>'; let cx = L;
+    [['bias2', 'var(--orange)'], ['cond', 'var(--blue)'], ['noise', 'var(--gray)']].forEach(([k, col]) => { const w = x(r.d[k]); if (w < 0.6) return; g += '<rect x="' + cx + '" y="' + (y + 6) + '" width="' + Math.max(0, w - 2) + '" height="22" rx="4" fill="' + col + '"/>'; if (w > 40) g += '<text x="' + (cx + (w - 2) / 2) + '" y="' + (y + 21) + '" text-anchor="middle" class="mono" style="font-size:11px;fill:#06080a;font-weight:600">' + r.d[k].toFixed(1) + '</text>'; cx += w; });
+    g += '<text x="' + (cx + 8) + '" y="' + (y + 21) + '" class="mono tx" style="font-size:11px">' + tot(r.d).toFixed(1) + ' g²</text>'; });
+  return svgOpen(W, H, 'Squared weight error split into offset from target, effect of conditions and unexplained spread') + g + '</svg><div class="legend">' + legendItem('sq', 'var(--orange)', 'Offset from target') + legendItem('sq', 'var(--blue)', 'Follows flow, pressure, temperature, density') + legendItem('sq', 'var(--gray)', 'Unexplained spread (random)') + '</div>';
+}
+
+/* Smooth distribution of bottle weights now vs proposed, with the tolerance limits (capability view) */
+function kde(arr, xs) { const n = arr.length, m = C.mean(arr), sd = C.sdev(arr), h = Math.max(1.06 * sd * Math.pow(n, -0.2), 1e-3); return xs.map(x => { let s = 0; for (let i = 0; i < n; i++) { const z = (x - arr[i]) / h; s += Math.exp(-0.5 * z * z); } return s / (n * h * Math.sqrt(2 * Math.PI)); }); }
+function chartCap(r) {
+  const b = r.distNow, a = ST.mode === 'fixed' ? r.distFixed : r.distAfter; if (!b || !a) return '';
+  const st = r.stats, tg = st.target, t1 = st.t1, t2 = st.t2, W = CW(), H = 220, L = 10, R = 10, T = 30, B = 40, B1 = r.before, A1 = PA(r);
+  const ext = Math.max(...[B1, A1].map(s => Math.abs(s.err) + 3.6 * s.sd)), lim = Math.max(t1 * 1.25, Math.min(ext * 1.05, t2 * 1.25)), x = v => L + (W - L - R) * (v + lim) / (2 * lim), N = 120, xs = []; for (let i = 0; i < N; i++) xs.push(-lim + 2 * lim * i / (N - 1));
+  const yb = kde(b.map(v => v - tg), xs), ya = kde(a.map(v => v - tg), xs), mx = Math.max(...yb, ...ya) * 1.08, y = v => T + (H - T - B) * (1 - v / mx), base = H - B;
+  const area = (ys, col, op) => '<path d="M' + x(xs[0]) + ' ' + base + ' ' + ys.map((v, i) => 'L' + x(xs[i]).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ') + ' L' + x(xs[N - 1]) + ' ' + base + 'Z" fill="' + col + '" opacity="' + op + '"/><path d="M' + ys.map((v, i) => x(xs[i]).toFixed(1) + ' ' + y(v).toFixed(1)).join(' L') + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round"/>';
+  let g = '<rect x="' + x(-t1) + '" y="' + T + '" width="' + (x(t1) - x(-t1)) + '" height="' + (base - T) + '" fill="var(--teal)" opacity=".07"/>' + area(yb, 'var(--gray)', .28) + area(ya, 'var(--teal)', .2);
+  g += '<line x1="' + x(0) + '" x2="' + x(0) + '" y1="' + (T - 6) + '" y2="' + base + '" stroke="var(--text)" opacity=".6"/><line x1="' + L + '" x2="' + (W - R) + '" y1="' + base + '" y2="' + base + '" stroke="var(--line2)"/>';
+  [[-t1, '−T1', 'var(--teal)'], [t1, '+T1', 'var(--teal)'], [-t2, '−T2', 'var(--amber)'], [t2, '+T2', 'var(--amber)']].filter(a => Math.abs(a[0]) <= lim).forEach(a => { g += '<line x1="' + x(a[0]) + '" x2="' + x(a[0]) + '" y1="' + (T - 6) + '" y2="' + base + '" stroke="' + a[2] + '" opacity=".8"/><text x="' + x(a[0]) + '" y="' + (T - 12) + '" text-anchor="middle" style="fill:' + a[2] + '">' + a[1] + '</text>'; });
+  g += '<text x="' + x(0) + '" y="' + (T - 12) + '" text-anchor="middle">target</text>';
+  ticks(-lim, lim, 6).forEach(v => { g += '<text x="' + x(v) + '" y="' + (base + 16) + '" text-anchor="middle" class="mono" style="font-size:10px">' + (v >= 0 ? '+' : '−') + Math.abs(v) + '</text>'; });
+  g += '<text x="' + (W / 2) + '" y="' + (H - 4) + '" text-anchor="middle" style="font-size:10.5px">bottle weight minus target (g)</text>';
+  g += '<circle cx="' + x(B1.err) + '" cy="' + (base) + '" r="4" fill="var(--gray)" stroke="var(--panel)" stroke-width="2"/><circle cx="' + x(A1.err) + '" cy="' + (base) + '" r="4" fill="var(--teal)" stroke="var(--panel)" stroke-width="2"/>';
+  return svgOpen(W, H, 'Distribution of bottle weights now and proposed, with tolerance limits') + g + '</svg><div class="legend">' + legendItem('', 'var(--gray)', 'Now') + legendItem('', 'var(--teal)', 'Proposed') + '<span class="mute">dots = averages</span></div>' +
+    '<div class="stats3"><span>Now <b>Cp ' + cpf(B1.cp) + '</b> · <b>Cpk ' + cpf(B1.cpk) + '</b> · <b>' + f0(B1.ppm) + '</b> ppm</span><span>Proposed <b>Cp ' + cpf(A1.cp) + '</b> · <b>Cpk ' + cpf(A1.cpk) + '</b> · <b>' + f0(A1.ppm) + '</b> ppm</span></div>';
+}
+
+/* The key chart: weight, anticipation and conditions, bottle by bottle, with a cursor you drag with a finger */
+function chartHead(r, id) {
+  const s = r.series; if (!s || s.length < 6) return ''; const hasRep = s[0].wDyn != null, W = CW(), L = 48, R = 8, n = s.length, st = r.stats, tg = st.target, t1 = st.t1, t2 = st.t2, fixed = ST.mode === 'fixed';
+  const conds = ['Q', 'P', 'T', 'rho'].filter(k => s.every(p => isFinite(p[k])) && C.sdev(s.map(p => p[k])) > 0);
+  const hW = 190, hA = hasRep ? 104 : 0, hC = 42, gap = 14, T = 10, hasA = hasRep;
+  const yW0 = T, yA0 = yW0 + hW + gap, yC0 = yA0 + (hasA ? hA + gap : 0), H = yC0 + conds.length * (hC + 8) + 26, x = i => L + (W - L - R) * (i / (n - 1));
+  const devs = s.flatMap(p => hasRep ? [p.w - tg, PW(p) - tg] : [p.w - tg]), lim = Math.max(t1 * 1.2, Math.min(Math.max(...devs.map(Math.abs)) * 1.08, t2 * 1.3)), yw = v => yW0 + hW * (0.5 - clampv(v, -lim, lim) / (2 * lim));
+  let g = '<rect x="' + L + '" y="' + yw(t1) + '" width="' + (W - L - R) + '" height="' + (yw(-t1) - yw(t1)) + '" fill="var(--teal)" opacity=".07"/>';
+  ticks(-lim, lim, 4).forEach(v => { g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yw(v) + '" y2="' + yw(v) + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (yw(v) + 3.5) + '" text-anchor="end" class="mono" style="font-size:10px">' + (v === 0 ? f1(tg) : sg(v, v % 1 ? 1 : 0)) + '</text>'; });
+  [[t1, 'T1', 'var(--teal)'], [-t1, '', 'var(--teal)'], [t2, 'T2', 'var(--amber)'], [-t2, '', 'var(--amber)']].filter(a => Math.abs(a[0]) <= lim).forEach(a => { g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yw(a[0]) + '" y2="' + yw(a[0]) + '" stroke="' + a[2] + '" opacity=".55"/>' + (a[1] ? '<text x="' + (W - R - 2) + '" y="' + (yw(a[0]) - 4) + '" text-anchor="end" style="font-size:10px;fill:' + a[2] + '">+' + a[1] + '</text>' : ''); });
+  g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yw(0) + '" y2="' + yw(0) + '" stroke="var(--text)" opacity=".5"/><text x="' + (L + 2) + '" y="' + (yW0 - 1) + '" style="font-size:10.5px;font-weight:600">Bottle weight (g)</text>';
+  s.forEach((p, i) => { g += '<circle cx="' + x(i).toFixed(1) + '" cy="' + yw(p.w - tg).toFixed(1) + '" r="2.3" fill="var(--gray)" opacity=".85"/>'; });
+  if (hasRep) s.forEach((p, i) => { g += '<circle cx="' + x(i).toFixed(1) + '" cy="' + yw(PW(p) - tg).toFixed(1) + '" r="2.3" fill="var(--teal)"/>'; });
+  let ay = null, ya0 = 0;
+  if (hasA) {
+    const av = s.flatMap(p => [AV(p), AD(p)]).concat([AN(r), AW(r)]), lo = Math.min(...av), hi = Math.max(...av), pad = Math.max(PCT() ? 0.05 : 1, (hi - lo) * 0.12), a0 = lo - pad, a1 = hi + pad; ay = v => yA0 + hA * (1 - (v - a0) / (a1 - a0)); ya0 = yA0;
+    ticks(a0, a1, 3).forEach(v => { g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + ay(v) + '" y2="' + ay(v) + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (ay(v) + 3.5) + '" text-anchor="end" class="mono" style="font-size:10px">' + v + '</text>'; });
+    g += '<text x="' + (L + 2) + '" y="' + (yA0 - 3) + '" style="font-size:10.5px;font-weight:600">' + (PCT() ? 'Closing point (% of setpoint)' : 'Closing anticipation (ms)') + '</text>';
+    g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + ay(AN(r)) + '" y2="' + ay(AN(r)) + '" stroke="var(--gray)" stroke-dasharray="4 3"/>';
+    if (Math.abs(r.aNew - r.aNow) > (PCT() ? 0.004 : 0.05)) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + ay(AW(r)) + '" y2="' + ay(AW(r)) + '" stroke="var(--teal)" stroke-dasharray="4 3" opacity=".7"/>';
+    g += '<path d="M' + s.map((p, i) => x(i).toFixed(1) + ' ' + ay(AV(p)).toFixed(1)).join(' L') + '" fill="none" stroke="var(--gray)" stroke-width="2" stroke-linejoin="round"/>';
+    g += '<path d="M' + s.map((p, i) => x(i).toFixed(1) + ' ' + ay(fixed ? AW(r) : AD(p)).toFixed(1)).join(' L') + '" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linejoin="round"/>';
+  }
+  const cy = [];
+  conds.forEach((k, j) => { const y0 = yC0 + j * (hC + 8), v = s.map(p => p[k]), lo = Math.min(...v), hi = Math.max(...v), yy = q => y0 + hC - 4 - (hC - 8) * (q - lo) / ((hi - lo) || 1), tm = r.comp && r.comp.all.find(t => t.key === k), used = r.comp && r.comp.on && r.comp.terms.some(t => t.key === k);
+    g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + (y0 + hC) + '" y2="' + (y0 + hC) + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (y0 + 12) + '" text-anchor="end" class="mono" style="font-size:10px">' + sig3(hi) + '</text><text x="' + (L - 6) + '" y="' + (y0 + hC - 2) + '" text-anchor="end" class="mono" style="font-size:10px">' + sig3(lo) + '</text>' +
+      '<text x="' + (L + 2) + '" y="' + (y0 + 9) + '" style="font-size:10.5px;font-weight:600">' + vName(k) + (unitOf(k) ? ' (' + esc(unitOf(k)) + ')' : '') + (used ? '  → ' + UNM() + ' follows it' : '') + '</text><path d="M' + v.map((q, i) => x(i).toFixed(1) + ' ' + yy(q).toFixed(1)).join(' L') + '" fill="none" stroke="' + (used ? 'var(--blue)' : 'var(--mute)') + '" stroke-width="1.6" stroke-linejoin="round"/>'; cy.push([k, yy]); });
+  const xb = H - 20;
+  g += '<text x="' + L + '" y="' + xb + '" style="font-size:10px">bottle ' + s[0].k + '</text><text x="' + (W - R) + '" y="' + xb + '" text-anchor="end" style="font-size:10px">bottle ' + s[n - 1].k + ' (latest)</text><text x="' + (W / 2) + '" y="' + xb + '" text-anchor="middle" style="font-size:10px">older ← → newer</text>';
+  g += '<line id="cur_' + id + '" x1="0" x2="0" y1="' + (T - 4) + '" y2="' + (H - 28) + '" stroke="var(--text)" stroke-opacity=".7"/><g id="mk_' + id + '"></g><rect x="' + L + '" y="0" width="' + (W - L - R) + '" height="' + H + '" fill="transparent"/>';
+  CH[id] = { s, n, W, L, R, x, yw, ay, tg, fixed, hasRep, units: { Q: unitOf('Q'), P: unitOf('P'), T: unitOf('T'), rho: unitOf('rho') }, hasA };
+  return '<div class="ro" id="ro_' + id + '"></div>' + svgOpen(W, H, 'Bottle by bottle: weight now and proposed, ' + UNM() + ' now and proposed, and the process conditions. Drag a finger across to read the values.', 'scrub', 'data-scrub="' + id + '" tabindex="0"') + g + '</svg>' +
+    '<div class="legend">' + (hasRep ? legendItem('dot', 'var(--gray)', 'Measured weight') + legendItem('dot', 'var(--teal)', fixed ? 'With the proposed base value' : 'With the proposed ' + UNM()) : legendItem('dot', 'var(--gray)', 'Measured weight')) + (hasA ? legendItem('', 'var(--gray)', (PCT() ? 'Closing point' : 'Anticipation') + ' applied (PLC history)') + legendItem('', 'var(--teal)', 'Proposed ' + UNM()) : '') + '</div>';
+}
+function wireScrubs() {
+  document.querySelectorAll('svg[data-scrub]').forEach(svg => {
+    const id = svg.dataset.scrub, c = CH[id]; if (!c) return; const cur = svg.querySelector('#cur_' + id), mk = svg.querySelector('#mk_' + id), ro = document.getElementById('ro_' + id);
+    const set = i => { i = clampv(i, 0, c.n - 1); const p = c.s[i], xx = c.x(i); cur.setAttribute('x1', xx); cur.setAttribute('x2', xx);
+      let m = '<circle cx="' + xx + '" cy="' + c.yw(p.w - c.tg) + '" r="4.5" fill="var(--gray)" stroke="var(--panel)" stroke-width="2"/>';
+      if (c.hasRep) m += '<circle cx="' + xx + '" cy="' + c.yw((c.fixed ? p.wFix : p.wDyn) - c.tg) + '" r="4.5" fill="var(--teal)" stroke="var(--panel)" stroke-width="2"/>';
+      if (c.hasA) m += '<circle cx="' + xx + '" cy="' + c.ay(AV(p)) + '" r="4.5" fill="var(--gray)" stroke="var(--panel)" stroke-width="2"/><circle cx="' + xx + '" cy="' + c.ay(c.fixed ? CH[id + '_aNew'] : AD(p)) + '" r="4.5" fill="var(--teal)" stroke="var(--panel)" stroke-width="2"/>';
+      mk.innerHTML = m;
+      const un = k => (c.units[k] ? ' ' + esc(c.units[k]) : ''), dpl = k => isFinite(p[k]) ? '<span>' + vName(k) + ' <b>' + sig3(p[k]) + un(k) + '</b></span>' : '';
+      ro.innerHTML = '<div class="k">Bottle ' + p.k + ' <span class="mute" style="font-weight:400">· ' + (i + 1) + ' of ' + c.n + (i === c.n - 1 ? ' (latest)' : '') + '</span></div>' +
+        '<span class="g"><i style="background:var(--gray)"></i>Measured <b>' + f1(p.w) + ' g</b> · ' + UNM() + ' <b>' + (PCT() ? AV(p).toFixed(2) + ' %' : f1(p.a) + ' ms') + '</b></span>' + (c.hasRep ? '<span class="g"><i style="background:var(--teal)"></i>Proposed <b>' + f1(c.fixed ? p.wFix : p.wDyn) + ' g</b> · ' + UNM() + ' <b>' + (PCT() ? (c.fixed ? CH[id + '_aNew'] : AD(p)).toFixed(2) + ' %' : f1(c.fixed ? CH[id + '_aNew'] : p.aDyn) + ' ms') + '</b></span>' : '') +
+        '<span style="flex-basis:100%">' + ['Q', 'P', 'T', 'rho'].map(dpl).join(' · ') + '</span>'; };
+    const at = e => { const bb = svg.getBoundingClientRect(); set(Math.round(((e.clientX - bb.left) * (c.W / bb.width) - c.L) / (c.W - c.L - c.R) * (c.n - 1))); };
+    let down = false; svg.addEventListener('pointerdown', e => { down = true; try { svg.setPointerCapture(e.pointerId); } catch (x) {} at(e); });
+    svg.addEventListener('pointermove', e => { if (down || e.pointerType === 'mouse') at(e); }); svg.addEventListener('pointerup', () => { down = false; }); svg.addEventListener('pointercancel', () => { down = false; });
+    let ci = c.n - 1; svg.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { ci = Math.max(0, ci - 1); set(ci); e.preventDefault(); } else if (e.key === 'ArrowRight') { ci = Math.min(c.n - 1, ci + 1); set(ci); e.preventDefault(); } });
+    set(c.n - 1);
+  });
+}
+
+
+/* ---------- candles + lines ---------- */
+const qt = (a, p) => { const v = a.slice().sort((x, y) => x - y), i = p * (v.length - 1), lo = Math.floor(i), hi = Math.ceil(i); return v[lo] + (v[hi] - v[lo]) * (i - lo); };
+const cdl = (arr, tg) => { const d = arr.map(v => v - tg); return { p5: qt(d, .05), p25: qt(d, .25), med: qt(d, .5), p75: qt(d, .75), p95: qt(d, .95), mean: C.mean(d), sd: C.sdev(d), n: d.length }; };
+const candleSvg = (x, c, w, col, y, op) => '<line x1="' + x + '" x2="' + x + '" y1="' + y(c.p95) + '" y2="' + y(c.p5) + '" stroke="' + col + '" stroke-width="1.6"/><rect x="' + (x - w / 2) + '" y="' + y(c.p75) + '" width="' + w + '" height="' + Math.max(2, y(c.p25) - y(c.p75)) + '" rx="2" fill="' + col + '" opacity="' + (op || 1) + '"/><line x1="' + (x - w / 2) + '" x2="' + (x + w / 2) + '" y1="' + y(c.med) + '" y2="' + y(c.med) + '" stroke="var(--deep)" stroke-width="1.6"/>';
+const candleLegend = () => '<div class="legend">' + legendItem('sq', 'var(--gray)', 'Now') + legendItem('sq', 'var(--teal)', 'Proposed') + '<span class="mute">body = middle 50% of bottles · wick = 90% · dark line = median</span></div>';
+function candleAxes(W, H, L, R, T, B, lim, y, t1, t2) {
+  let g = '<rect x="' + L + '" y="' + y(t1) + '" width="' + (W - L - R) + '" height="' + (y(-t1) - y(t1)) + '" fill="var(--teal)" opacity=".08"/>';
+  ticks(-lim, lim, 4).forEach(v => { g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end" class="mono" style="font-size:10px">' + (v === 0 ? '0' : sg(v, v % 1 ? 1 : 0)) + '</text>'; });
+  [[t1, 'T1', 'var(--teal)'], [-t1, '−T1', 'var(--teal)'], [t2, 'T2', 'var(--amber)'], [-t2, '−T2', 'var(--amber)']].filter(a => Math.abs(a[0]) <= lim).forEach(a => { g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(a[0]) + '" y2="' + y(a[0]) + '" stroke="' + a[2] + '" opacity=".6"/><text x="' + (L + 2) + '" y="' + (y(a[0]) - 3) + '" style="font-size:9.5px;fill:' + a[2] + '">' + a[1] + '</text>'; });
+  return g + '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="var(--text)" opacity=".55"/><text x="4" y="' + (T - 12) + '" style="font-size:10px">grams vs target</text>';
+}
+/* All heads: one pair of candles per head (now vs proposed) */
+function chartCandles(rs) {
+  const rows = rs.filter(r => r.series && r.series[0] && r.series[0].wDyn != null && r.status !== 'wait'); if (!rows.length) return '';
+  const W = CW(), L = 40, R = 6, T = 26, B = 22, H = 300, n = rows.length, slot = (W - L - R) / n, cw = Math.min(13, slot * .36), t1 = rows[0].stats.t1, t2 = rows[0].stats.t2;
+  const data = rows.map(r => ({ r, a: cdl(r.series.map(p => p.w), r.stats.target), b: cdl(r.series.map(PW), r.stats.target) })), ext = Math.max(...data.flatMap(d => [d.a, d.b].map(c => Math.max(Math.abs(c.p5), Math.abs(c.p95))))), lim = Math.max(t1 * 1.3, Math.min(ext * 1.08, t2 * 1.4)), y = v => T + (H - T - B) * (0.5 - clampv(v, -lim, lim) / (2 * lim));
+  let g = candleAxes(W, H, L, R, T, B, lim, y, t1, t2);
+  data.forEach((d, i) => { const cx = L + slot * (i + .5), i0 = ST.results.indexOf(d.r), tip = 'Head ' + d.r.head + ': Cpk now ' + cpf(d.r.before.cpk) + ', proposed ' + cpf(PA(d.r).cpk);
+    g += '<g data-act="head" data-i="' + i0 + '" style="cursor:pointer"><title>' + esc(tip) + '</title><rect x="' + (cx - slot / 2) + '" y="' + T + '" width="' + slot + '" height="' + (H - T) + '" fill="transparent"/>' + candleSvg(cx - cw * .65, d.a, cw, 'var(--gray)', y, .9) + candleSvg(cx + cw * .65, d.b, cw, 'var(--teal)', y) + '<text x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle" class="mono tx" style="font-size:11px">H' + d.r.head + '</text></g>'; });
+  return svgOpen(W, H, 'Candles per head: spread of bottle weights now and proposed, against the tolerance band') + g + '</svg>' + candleLegend();
+}
+/* One head over time: groups of bottles, now vs proposed; tap a group to read it */
+const CC = {};
+function chartCandleHead(r, id) {
+  const s = r.series; if (!s || s.length < 20 || s[0].wDyn == null) return ''; const W = CW(), L = 40, R = 6, T = 26, B = 22, H = 240, st = r.stats, tg = st.target, t1 = st.t1, t2 = st.t2, plotW = W - L - R;
+  const ng = clampv(Math.floor(plotW / 30), 5, 14), Bz = Math.max(4, Math.floor(s.length / ng)), groups = []; for (let e = s.length; e - Bz >= 0 && groups.length < ng; e -= Bz) groups.unshift(s.slice(e - Bz, e));
+  const gd = groups.map(gr => ({ a: cdl(gr.map(p => p.w), tg), b: cdl(gr.map(PW), tg), k0: gr[0].k, k1: gr[gr.length - 1].k, oa: gr.filter(p => Math.abs(p.w - tg) > t1).length / gr.length, ob: gr.filter(p => Math.abs(PW(p) - tg) > t1).length / gr.length })),
+    ext = Math.max(...gd.flatMap(d => [d.a, d.b].map(c => Math.max(Math.abs(c.p5), Math.abs(c.p95))))), lim = Math.max(t1 * 1.3, Math.min(ext * 1.08, t2 * 1.4)), y = v => T + (H - T - B) * (0.5 - clampv(v, -lim, lim) / (2 * lim)), slot = plotW / gd.length, cw = Math.min(14, slot * .34);
+  let g = candleAxes(W, H, L, R, T, B, lim, y, t1, t2) + '<rect id="cb_' + id + '" x="0" y="' + T + '" width="' + slot + '" height="' + (H - T - B) + '" fill="var(--teal)" opacity=".10"/>';
+  gd.forEach((d, i) => { const cx = L + slot * (i + .5); g += candleSvg(cx - cw * .65, d.a, cw, 'var(--gray)', y, .9) + candleSvg(cx + cw * .65, d.b, cw, 'var(--teal)', y); });
+  g += '<text x="' + L + '" y="' + (H - 6) + '" style="font-size:10px">older</text><text x="' + (W - R) + '" y="' + (H - 6) + '" text-anchor="end" style="font-size:10px">newer</text><rect x="' + L + '" y="0" width="' + plotW + '" height="' + H + '" fill="transparent"/>';
+  CC[id] = { gd, slot, L, W };
+  return '<div class="ro" id="rc_' + id + '"></div>' + svgOpen(W, H, 'Candles over time for one head: groups of ' + Bz + ' bottles, now and proposed. Tap a group to read it.', 'scrub', 'data-candle="' + id + '" tabindex="0"') + g + '</svg>' + candleLegend();
+}
+function wireCandles() {
+  document.querySelectorAll('svg[data-candle]').forEach(svg => { const id = svg.dataset.candle, c = CC[id]; if (!c) return; const bx = svg.querySelector('#cb_' + id), ro = document.getElementById('rc_' + id);
+    const set = i => { i = clampv(i, 0, c.gd.length - 1); const d = c.gd[i]; bx.setAttribute('x', c.L + c.slot * i); ro.innerHTML = '<div class="k">Bottles ' + d.k0 + '–' + d.k1 + ' <span class="mute" style="font-weight:400">· ' + d.a.n + ' bottles</span></div><span class="g"><i style="background:var(--gray)"></i>Now: average <b>' + sg(d.a.mean, 2) + ' g</b> · σ <b>' + f2(d.a.sd) + '</b> · outside T1 <b>' + pc(d.oa) + '%</b></span><span class="g"><i style="background:var(--teal)"></i>Proposed: average <b>' + sg(d.b.mean, 2) + ' g</b> · σ <b>' + f2(d.b.sd) + '</b> · outside T1 <b>' + pc(d.ob) + '%</b></span>'; };
+    const at = e => { const bb = svg.getBoundingClientRect(); set(Math.floor(((e.clientX - bb.left) * (c.W / bb.width) - c.L) / c.slot)); };
+    let down = false; svg.addEventListener('pointerdown', e => { down = true; try { svg.setPointerCapture(e.pointerId); } catch (x) {} at(e); }); svg.addEventListener('pointermove', e => { if (down || e.pointerType === 'mouse') at(e); }); svg.addEventListener('pointerup', () => { down = false; }); svg.addEventListener('pointercancel', () => { down = false; });
+    let ci = c.gd.length - 1; svg.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { ci = Math.max(0, ci - 1); set(ci); e.preventDefault(); } else if (e.key === 'ArrowRight') { ci = Math.min(c.gd.length - 1, ci + 1); set(ci); e.preventDefault(); } });
+    set(c.gd.length - 1); });
+}
+/* Generic line chart with stacked panels and a cursor you drag with a finger */
+const LN = {};
+function chartLines(id, panels, n, aria) {
+  const W = CW(), L = 46, R = 8, ph = 92, gap = 26, T = 18, H = T + panels.length * (ph + gap), x = i => L + (W - L - R) * (i / Math.max(1, n - 1)); let g = '';
+  panels.forEach((p, j) => { const y0 = T + j * (ph + gap), all = p.lines.flatMap(l => l.vals).concat(p.bands ? p.bands.flatMap(b => [b.lo, b.hi]) : []), lo0 = p.lo != null ? p.lo : Math.min(...all), hi0 = Math.max(...all), pad = (hi0 - lo0) * .1 || 1, lo = p.lo != null ? lo0 : lo0 - pad, hi = hi0 + pad, y = v => y0 + ph * (1 - (clampv(v, lo, hi) - lo) / (hi - lo)); p._y = y;
+    g += '<text x="' + L + '" y="' + (y0 - 6) + '" style="font-size:10.5px;font-weight:600">' + p.title + '</text>';
+    (p.bands || []).forEach(b => { g += '<rect x="' + L + '" y="' + y(b.hi) + '" width="' + (W - L - R) + '" height="' + Math.max(0, y(b.lo) - y(b.hi)) + '" fill="' + b.color + '" opacity=".09"/>'; });
+    ticks(lo, hi, 3).forEach(v => { g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end" class="mono" style="font-size:10px">' + (p.fmt ? p.fmt(v) : sig3(v)) + '</text>'; });
+    (p.refs || []).forEach(rf => { if (rf.v >= lo && rf.v <= hi) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(rf.v) + '" y2="' + y(rf.v) + '" stroke="' + rf.color + '" opacity="' + (rf.op || .6) + '"' + (rf.dash ? ' stroke-dasharray="4 3"' : '') + '/>'; });
+    p.lines.forEach(l => { g += '<path d="M' + l.vals.map((v, i) => x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' L') + '" fill="none" stroke="' + l.color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'; }); });
+  g += '<text x="' + L + '" y="' + (H - 4) + '" style="font-size:10px">older</text><text x="' + (W - R) + '" y="' + (H - 4) + '" text-anchor="end" style="font-size:10px">newer</text>';
+  g += '<line id="lc_' + id + '" x1="0" x2="0" y1="' + (T - 4) + '" y2="' + (H - 16) + '" stroke="var(--text)" stroke-opacity=".7"/><g id="lm_' + id + '"></g><rect x="' + L + '" y="0" width="' + (W - L - R) + '" height="' + H + '" fill="transparent"/>';
+  LN[id] = { panels, n, W, L, R, x };
+  return '<div class="ro" id="rl_' + id + '"></div>' + svgOpen(W, H, aria, 'scrub', 'data-line="' + id + '" tabindex="0"') + g + '</svg><div class="legend">' + panels[0].lines.map(l => legendItem('', l.color, l.name)).join('') + '</div>';
+}
+function wireLines() {
+  document.querySelectorAll('svg[data-line]').forEach(svg => { const id = svg.dataset.line, c = LN[id]; if (!c) return; const cur = svg.querySelector('#lc_' + id), mk = svg.querySelector('#lm_' + id), ro = document.getElementById('rl_' + id);
+    const set = i => { i = clampv(i, 0, c.n - 1); const xx = c.x(i); cur.setAttribute('x1', xx); cur.setAttribute('x2', xx); let m = '', t = '<div class="k">' + (c.panels.pos ? c.panels.pos(i) : 'Position ' + (i + 1) + ' of ' + c.n) + '</div>';
+      c.panels.forEach(p => { t += '<span style="flex-basis:100%"><span class="mute">' + p.title + '</span><br>' + p.lines.map(l => '<span class="g"><i style="background:' + l.color + '"></i>' + l.name + ' <b>' + (p.fmt2 || p.fmt || sig3)(l.vals[i]) + '</b></span>').join(' &nbsp; ') + '</span>'; p.lines.forEach(l => { m += '<circle cx="' + xx + '" cy="' + p._y(l.vals[i]) + '" r="4" fill="' + l.color + '" stroke="var(--solid)" stroke-width="2"/>'; }); });
+      mk.innerHTML = m; ro.innerHTML = t; };
+    const at = e => { const bb = svg.getBoundingClientRect(); set(Math.round(((e.clientX - bb.left) * (c.W / bb.width) - c.L) / (c.W - c.L - c.R) * (c.n - 1))); };
+    let down = false; svg.addEventListener('pointerdown', e => { down = true; try { svg.setPointerCapture(e.pointerId); } catch (x) {} at(e); }); svg.addEventListener('pointermove', e => { if (down || e.pointerType === 'mouse') at(e); }); svg.addEventListener('pointerup', () => { down = false; }); svg.addEventListener('pointercancel', () => { down = false; });
+    let ci = c.n - 1; svg.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { ci = Math.max(0, ci - 1); set(ci); e.preventDefault(); } else if (e.key === 'ArrowRight') { ci = Math.min(c.n - 1, ci + 1); set(ci); e.preventDefault(); } });
+    set(c.n - 1); });
+}
+const roll = (a, w, f) => { const o = a.map((_, i) => i < w - 1 ? null : f(a.slice(i - w + 1, i + 1))), v0 = o[Math.min(w - 1, a.length - 1)]; return o.map(v => v == null ? v0 : v); };
+/* One head: rolling average error and rolling spread, now vs proposed */
+function lineHead(r, id) {
+  const s = r.series; if (!s || s.length < 20 || s[0].wDyn == null) return ''; const tg = r.stats.target, t1 = r.stats.t1, w = Math.max(8, Math.round(s.length / 10)), A = s.map(p => p.w - tg), Bv = s.map(p => PW(p) - tg), sd = a => a.length > 2 ? C.sdev(a) : 0;
+  const P = [{ title: 'Average weight error (g), rolling ' + w + ' bottles', lines: [{ name: 'Now', color: 'var(--gray)', vals: roll(A, w, C.mean) }, { name: 'Proposed', color: 'var(--teal)', vals: roll(Bv, w, C.mean) }], bands: [{ lo: -t1, hi: t1, color: 'var(--teal)' }], refs: [{ v: 0, color: 'var(--text)', op: .5 }, { v: t1, color: 'var(--teal)' }, { v: -t1, color: 'var(--teal)' }], fmt: v => (Math.abs(v) < 10 ? sg(v, 1) : sg(v, 0)), fmt2: v => sg(v, 2) + ' g' },
+    { title: 'Spread σ (g), rolling ' + w + ' bottles', lines: [{ name: 'Now', color: 'var(--gray)', vals: roll(A, w, sd) }, { name: 'Proposed', color: 'var(--teal)', vals: roll(Bv, w, sd) }], lo: 0, refs: [{ v: t1 / 3, color: 'var(--amber)', dash: true, op: .8 }], fmt: v => f1(v), fmt2: v => f2(v) + ' g' }];
+  P.pos = i => 'Bottle ' + s[i].k + ' <span class="mute" style="font-weight:400">· ' + (i + 1) + ' of ' + s.length + '</span>';
+  return chartLines(id, P, s.length, 'Line chart over time: rolling average weight error and rolling spread, now and proposed') + '<p class="small mute" style="margin-top:6px">Dashed amber line: σ = T1 ÷ 3, the spread at which a centred head just reaches Cpk 1.0.</p>';
+}
+/* Whole machine: share of bottles outside T1 over time, all heads pooled by position */
+function lineMachine(rs) {
+  const rows = rs.filter(r => r.series && r.series[0] && r.series[0].wDyn != null && r.status !== 'wait'); if (!rows.length) return '';
+  const n = Math.min(...rows.map(r => r.series.length)); if (n < 20) return ''; const w = Math.max(5, Math.round(n / 12)), A = [], B = [];
+  for (let i = 0; i < n; i++) { let a = 0, b = 0, m = 0; for (let k = Math.max(0, i - w + 1); k <= i; k++) rows.forEach(r => { const p = r.series[r.series.length - n + k], tg = r.stats.target, t1 = r.stats.t1; m++; if (Math.abs(p.w - tg) > t1) a++; if (Math.abs(PW(p) - tg) > t1) b++; }); A.push(100 * a / m); B.push(100 * b / m); }
+  const P = [{ title: 'Bottles outside T1 (%), all heads, rolling ' + w + ' positions', lines: [{ name: 'Now', color: 'var(--gray)', vals: A }, { name: 'Proposed', color: 'var(--teal)', vals: B }], lo: 0, fmt: v => v.toFixed(0), fmt2: v => v.toFixed(1) + ' %' }];
+  P.pos = i => 'Position ' + (i + 1) + ' of ' + n + ' <span class="mute" style="font-weight:400">· ' + rows.length + ' heads pooled</span>';
+  return chartLines('machine', P, n, 'Line chart over time: percentage of bottles outside T1 across all heads, now and proposed');
+}
+
+/* Tolerance chart: histogram of the weights in the file with draggable T1 / T2 lines */
+function chartTol() {
+  const d = ST.dev; if (!d || d.length < 5) return ''; const W = CW(), H = 230, L = 12, R = 12, T = 40, B = 34, base = H - B, nb = 36;
+  const sorted = d.slice().sort((a, b) => a - b), q = p => sorted[Math.floor(p * (sorted.length - 1))], dataExt = Math.max(Math.abs(q(0.003)), Math.abs(q(0.997))), lim = Math.max(dataExt * 1.15, ST.tol.t2 * 1.4, ST.tol.t1 * 2.2, 1), x = v => L + (W - L - R) * (v + lim) / (2 * lim);
+  const cnt = new Array(nb).fill(0); d.forEach(v => { const k = clampv(Math.floor((v + lim) / (2 * lim) * nb), 0, nb - 1); cnt[k]++; }); const mx = Math.max(...cnt, 1), bw = (W - L - R) / nb;
+  let g = ''; cnt.forEach((c, k) => { const cx = -lim + (k + 0.5) * 2 * lim / nb, h = (base - T) * c / mx; g += '<rect class="tb" data-x="' + cx.toFixed(4) + '" x="' + (L + k * bw + 1).toFixed(1) + '" y="' + (base - h).toFixed(1) + '" width="' + Math.max(1, bw - 2).toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2" fill="var(--gray)"/>'; });
+  g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + base + '" y2="' + base + '" stroke="var(--line2)"/><line x1="' + x(0) + '" x2="' + x(0) + '" y1="' + (T - 4) + '" y2="' + base + '" stroke="var(--text)" opacity=".6"/><text x="' + x(0) + '" y="' + (H - 6) + '" text-anchor="middle" style="font-size:10.5px">target</text>';
+  ticks(-lim, lim, 6).forEach(v => { if (v) g += '<text x="' + x(v) + '" y="' + (base + 14) + '" text-anchor="middle" class="mono" style="font-size:10px">' + (v >= 0 ? '+' : '−') + Math.abs(v) + ' g</text>'; });
+  const knob = (id, col, label, side) => '<g class="knob" data-k="' + id + '" data-side="' + side + '" tabindex="0" role="slider" aria-label="' + label + ' ' + (side < 0 ? 'lower' : 'upper') + ' limit" style="cursor:ew-resize"><line class="kl" y1="' + (T + 14) + '" y2="' + base + '" stroke="' + col + '" stroke-width="2"/><rect class="kh" y="' + (T - 14) + '" width="30" height="26" rx="8" fill="' + col + '"/><text class="kt" y="' + (T + 3) + '" text-anchor="middle" style="font-size:11px;font-weight:700;fill:#06080a">' + label + '</text><rect class="kz" y="' + (T - 14) + '" width="44" height="' + (base - T + 14) + '" fill="transparent"/></g>';
+  g += knob('t2', 'var(--amber)', 'T2', -1) + knob('t2', 'var(--amber)', 'T2', 1) + knob('t1', 'var(--teal)', 'T1', -1) + knob('t1', 'var(--teal)', 'T1', 1);
+  TOLC.W = W; TOLC.lim = lim; TOLC.L = L; TOLC.R = R; TOLC.x = x; TOLC.n = d.length;
+  return svgOpen(W, H, 'Weights in the file with draggable tolerance limits T1 and T2', 'tolsvg', 'id="tolsvg"') + g + '</svg><div class="legend">' + legendItem('sq', 'var(--teal)', 'Inside T1') + legendItem('sq', 'var(--amber)', 'Between T1 and T2') + legendItem('sq', 'var(--red)', 'Beyond T2') + '</div>';
+}
+const TOLC = {};
+function tolStats() { const d = ST.dev, t1 = ST.tol.t1, t2 = ST.tol.t2; let a = 0, b = 0, c = 0; d.forEach(v => { const m = Math.abs(v); if (m <= t1) a++; else if (m <= t2) b++; else c++; }); const n = d.length; return { a: a / n, b: b / n, c: c / n }; }
+function paintTol() {
+  const svg = $('#tolsvg'); if (!svg) return; const t1 = ST.tol.t1, t2 = ST.tol.t2, x = TOLC.x;
+  svg.querySelectorAll('.knob').forEach(k => { const v = ST.tol[k.dataset.k] * +k.dataset.side, xx = x(v), kx = xx - 15; k.querySelector('.kl').setAttribute('x1', xx); k.querySelector('.kl').setAttribute('x2', xx); const h = k.querySelector('.kh'); h.setAttribute('x', kx); k.querySelector('.kt').setAttribute('x', xx); k.querySelector('.kz').setAttribute('x', xx - 22); k.setAttribute('aria-valuenow', ST.tol[k.dataset.k].toFixed(2));
+    k.querySelector('.kh').setAttribute('y', k.dataset.k === 't1' ? 26 : 6); k.querySelector('.kt').setAttribute('y', k.dataset.k === 't1' ? 43 : 23); });
+  svg.querySelectorAll('.tb').forEach(r => { const m = Math.abs(+r.dataset.x); r.setAttribute('fill', m <= t1 ? 'var(--teal)' : m <= t2 ? 'var(--amber)' : 'var(--red)'); });
+  const s = tolStats(), e = $('#tolout'); if (e) e.innerHTML = '<span>T1 <b>±' + f2(t1) + ' g</b></span><span>T2 <b>±' + f2(t2) + ' g</b></span><span>Inside T1 <b>' + (s.a * 100).toFixed(1) + '%</b></span><span>Between <b>' + (s.b * 100).toFixed(1) + '%</b></span><span>Beyond T2 <b>' + (s.c * 100).toFixed(1) + '%</b></span>';
+  const i1 = $('#tol_t1'), i2 = $('#tol_t2'); if (i1 && document.activeElement !== i1) i1.value = t1.toFixed(2); if (i2 && document.activeElement !== i2) i2.value = t2.toFixed(2);
+}
+function wireTol() {
+  const svg = $('#tolsvg'); if (!svg) return; paintTol(); let drag = null;
+  const val = e => { const bb = svg.getBoundingClientRect(), px = (e.clientX - bb.left) * (TOLC.W / bb.width); return Math.abs((px - TOLC.L) / (TOLC.W - TOLC.L - TOLC.R) * 2 * TOLC.lim - TOLC.lim); };
+  const apply = (k, v) => { v = Math.max(0.05, Math.min(v, TOLC.lim * 0.985)); if (k === 't1') { ST.tol.t1 = +v.toFixed(2); if (ST.tol.t2 < ST.tol.t1 + 0.05) ST.tol.t2 = +(ST.tol.t1 + 0.05).toFixed(2); } else { ST.tol.t2 = +Math.max(v, ST.tol.t1 + 0.05).toFixed(2); } ST.tol.user = true; ST.stale = true; paintTol(); };
+  svg.addEventListener('pointerdown', e => { const bb = svg.getBoundingClientRect(), px = (e.clientX - bb.left) * (TOLC.W / bb.width), c = []; ['t1', 't2'].forEach(k => [-1, 1].forEach(sd => c.push({ k, d: Math.abs(px - TOLC.x(ST.tol[k] * sd)) }))); c.sort((a, b) => a.d - b.d);
+    const g = e.target.closest && e.target.closest('.knob'); drag = g ? g.dataset.k : (c[0].d < 34 ? c[0].k : null); if (drag) { try { svg.setPointerCapture(e.pointerId); } catch (x) {} apply(drag, val(e)); e.preventDefault(); } });
+  svg.addEventListener('pointermove', e => { if (drag) apply(drag, val(e)); }); const end = () => { if (drag) { drag = null; saveMeta(); } }; svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+  svg.addEventListener('keydown', e => { const g = e.target.closest && e.target.closest('.knob'); if (!g) return; const k = g.dataset.k, sd = +g.dataset.side, step = e.shiftKey ? 0.5 : 0.1; if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { apply(k, ST.tol[k] + (e.key === 'ArrowRight' ? 1 : -1) * sd * step); e.preventDefault(); } });
+}
+
+/* ---------- small UI parts ---------- */
+function deltaPill(now, prop, unit, dec, better) {
+  const d = prop - now, flat = Math.abs(d) < Math.pow(10, -dec) / 2 * 1.01, good = better === 'up' ? d > 0 : d < 0;
+  return '<span class="delta ' + (flat ? 'flat' : good ? 'good' : 'bad') + '">' + (flat ? 'no change' : sg(d, dec) + ' ' + unit) + '</span>';
+}
+const verdict = c => c >= 1.33 ? '<span class="verdict v-good">Capable</span>' : c >= 1 ? '<span class="verdict v-mid">Marginal</span>' : '<span class="verdict v-bad">Not capable</span>';
+function tile(label, now, prop, goal, fmt, unit, dec, better, du) {
+  const good = better === 'up' ? prop > now + 1e-9 : prop < now - 1e-9;
+  return '<div class="tile ' + (good ? 'hot' : '') + '"><div class="lab">' + label + '</div><div class="ba"><div><small>Now</small><span class="n">' + fmt(now) + '</span><span class="unit">' + unit + '</span></div><div class="ar" aria-hidden="true">→</div><div><small>Proposed</small><span class="p">' + fmt(prop) + '</span><span class="unit">' + unit + '</span></div></div>' + deltaPill(now, prop, du || unit, dec, better) + (label === 'Capability Cpk' ? '<div class="goal">' + verdict(now) + ' → ' + verdict(prop) + '</div>' : '') +
+    (goal != null ? '<div class="goal">Goal after all rounds: <b>' + fmt(goal) + '</b>' + unit + '</div>' : '') + '</div>';
+}
+const followTags = r => r.comp && r.comp.on ? '<div class="follow"><span>Follows</span>' + r.comp.terms.map(t => '<span class="tag">' + vName(t.key) + '</span>').join('') + '</div>' : '';
+function miniCpk(b, a) { const sc = v => Math.min(100, 100 * Math.min(v, 3) / 3); return '<div class="mini"><div class="tr"><i style="width:' + sc(b.cpk) + '%;background:var(--gray)"></i><span class="tick" style="left:' + (100 * 1.33 / 3) + '%"></span></div><div class="tr"><i style="width:' + sc(a.cpk) + '%;background:var(--teal)"></i><span class="tick" style="left:' + (100 * 1.33 / 3) + '%"></span></div></div>'; }
+const sec = (title, body, note) => '<h3>' + title + '</h3>' + (note ? '<p class="small t2" style="margin:-4px 0 8px">' + note + '</p>' : '') + body;
+const modeSeg = () => '<div class="seg" role="group" aria-label="What to show"><button data-act="mode" data-m="full" aria-pressed="' + (ST.mode === 'full') + '">Base + follows conditions</button><button data-act="mode" data-m="fixed" aria-pressed="' + (ST.mode === 'fixed') + '">Base value only</button></div>';
+
+/* ---------- views ---------- */
+function installCard() {
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent), and = /Android/.test(navigator.userAgent);
+  return '<div class="panel"><div class="kicker">Get started in 3 steps</div><ol class="steplist"><li><div><b>Open this page on your phone</b><p class="small t2">Any browser works. Nothing to download or install.</p></div></li>' +
+    '<li><div><b>Put it on your Home Screen (optional)</b><p class="small t2">' + (ios ? 'In Safari tap <b>Share</b>, then <b>Add to Home Screen</b>.' : and ? 'In Chrome tap <b>⋮</b>, then <b>Add to Home screen</b> (or <b>Install app</b>).' : 'iPhone: Safari ▸ Share ▸ Add to Home Screen. Android: Chrome ▸ ⋮ ▸ Add to Home screen.') + '</p></div></li>' +
+    '<li><div><b>Run the demo, then open your PLC history</b><p class="small t2">Everything runs on the phone. No data leaves it.</p></div></li></ol></div>';
+}
+function viewData() {
+  if (!ST.parsed) {
+    const s = ST.saved;
+    return '<h1>Make dosing setpoints self-calibrating</h1><p class="t2">Reads the PLC history (each bottle with its weight), learns how flow, density, temperature and pressure move the weight, and shows <b>where every head is now</b>, <b>what it gains</b> and <b>why</b>.</p>' +
+      (s ? '<div class="panel hot"><b>Continue where you left off</b><p class="small t2">' + esc(s.name || 'saved data') + ' · saved ' + new Date(s.savedAt).toLocaleString() + '</p><button class="btn pri block" data-act="resume">Open saved data</button></div>' : '') +
+      '<div class="grid g2" style="margin-top:14px"><button class="choice main" data-act="demo"><h2>▶ Try the demo</h2><p>A simulated 10-head filler with changing pressure, temperature and flow. See the result in a few seconds.</p></button>' +
+      '<button class="choice" data-act="pick"><h2>⇪ Use my PLC history</h2><p>Choose the CSV exported from the PLC. One row per bottle: head, closing point (% of setpoint), flow, density, temperature, pressure, target and the net weight.</p></button></div>' +
+      '<details class="panel"><summary>Paste CSV text instead</summary><textarea id="paste" placeholder="Paste CSV here…">' + esc(ST.pasted) + '</textarea><button class="btn block" data-act="paste">Use pasted text</button></details>' + installCard();
+  }
+  const miss = C.missingRequired(ST.map, ST.unit), info = ST.info || {};
+  let h = '<h1>Check the data</h1><p class="t2">' + esc(ST.fileName) + ' · ' + f0(ST.parsed.rows.length) + ' rows</p>' + (ST.simulated ? '<div class="banner">SIMULATED DATA – not from a real machine</div>' : '');
+  h += '<div class="panel ' + (miss.length ? 'warn' : '') + '"><b>' + (miss.length ? '⚠ Please match these columns: ' + esc(miss.join(', ')) : '✓ Columns recognised') + '</b>' + (!miss.length ? '<p class="small t2">' + f0(info.kept || 0) + ' usable bottles' + (info.dropped ? ' · ' + f0(info.dropped) + ' skipped (missing values)' : '') + '. The closing value is read as <b>' + (ST.unit === 'pct' ? '% of the setpoint' : 'milliseconds') + '</b>. The PLC log is used as it is: each weight is read on the row of its own fill.</p>' : '') +
+    '<details' + (miss.length ? ' open' : '') + '><summary class="t2">Show / change column mapping</summary>' + C.FIELDS.filter(f => !f.hidden && !(f.key === 't' && ST.unit === 'pct')).map(f => '<div class="row"><label for="m_' + f.key + '">' + esc(f.key === 'a' ? (ST.unit === 'ms' ? 'Closing anticipation applied (ms)' : 'Closing point applied (% of setpoint)') : f.key === 't' ? 'Commanded dose time (ms)' : f.label) + (f.req || (f.key === 't' && ST.unit === 'ms') ? ' *' : '') + '</label><select id="m_' + f.key + '" data-map="' + f.key + '"><option value="">– not in file –</option>' + ST.parsed.header.map((x, i) => '<option value="' + i + '"' + (ST.map[f.key] === i ? ' selected' : '') + '>' + esc(x) + '</option>').join('') + '</select></div>').join('') + '<div class="row"><label for="unitsel">Closing value in the file is…</label><select id="unitsel"><option value="auto"' + (ST.unitOverride === 'auto' ? ' selected' : '') + '>detected: ' + (ST.unit === 'pct' ? '% of setpoint' : 'milliseconds') + '</option><option value="pct"' + (ST.unitOverride === 'pct' ? ' selected' : '') + '>% of setpoint (e.g. 99.3)</option><option value="ms"' + (ST.unitOverride === 'ms' ? ' selected' : '') + '>milliseconds before the end</option></select></div></details></div>';
+  if (!miss.length && ST.tol && ST.dev && ST.dev.length > 4) {
+    h += '<h3>Tolerance</h3><div class="panel"><b>Drag the lines to set T1 and T2</b><p class="small t2">Bars are your weights relative to the target. ' + (ST.tol.user ? 'You changed the limits.' : (ST.map.t1 != null ? 'Starting from the values in the file.' : 'No T1 in the file: 1.5% of target used as a start.')) + ' The knobs (or the arrow keys) move both sides together.</p><div id="tolwrap">' + chartTol() + '</div><div class="stats3" id="tolout"></div>' +
+      '<details><summary class="t2">Type the numbers instead</summary><div class="row"><label for="tol_t1">T1 (±g)</label><input type="number" id="tol_t1" step="0.1" min="0.05"></div><div class="row"><label for="tol_t2">T2 (±g)</label><input type="number" id="tol_t2" step="0.1" min="0.1"></div></details>' +
+      (ST.tol.user ? '<button class="btn block ghost" data-act="tolreset">Use the values from the file</button>' : '') + '</div>';
+    h += '<button class="btn pri block" data-act="learn">Learn from this data</button>';
+  }
+  return h + '<button class="btn block ghost" data-act="home">Load different data</button>';
+}
+function viewBusy() { const b = ST.busy || { i: 0, n: 1 }, pct = Math.round(100 * (b.i + 0.5) / b.n); return '<h1>Learning…</h1><p class="t2">' + (b.head ? 'Head ' + b.head + ' · ' + (b.i + 1) + ' of ' + b.n : 'Preparing data') + '</p><div class="progress" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div><p class="small mute">Fitting a physics model per head, picking the variables that matter (Lasso), checking against newer bottles and replaying the same bottles with the proposal.</p>'; }
+
+function viewResult() {
+  const sm = ST.summary, rs = ST.results; if (!sm) return viewData();
+  const b = sm.before, a = SA(sm), gl = sm.goal, nc = rs.filter(r => r.hasComp).length;
+  let h = (ST.simulated ? '<div class="banner">SIMULATED DATA – a demo machine with moving pressure, temperature and flow</div>' : '') + (ST.stale ? '<div class="banner">Tolerance changed after this result – tap “Learn” on the Data step to update.</div>' : '');
+  h += '<div class="panel hot"><div class="kicker">Projected gain · all heads together</div><h2 style="font-size:20px;margin-top:6px">' + esc(ST.mode === 'fixed' ? sm.headline.replace(/Cpk from [\d.]+ to [\d.]+/, 'Cpk from ' + b.cpk.toFixed(2) + ' to ' + a.cpk.toFixed(2)) : sm.headline) + '</h2><p class="small t2">Replay of the last ' + f0(sm.bottles) + ' weighed bottles: <b>Now</b> = the same bottles at today’s setpoint, <b>Proposed</b> = the same bottles with the proposal. A projection, not a measurement. Tolerance T1 ±' + f2(rs[0].stats.t1) + ' g, T2 ±' + f2(rs[0].stats.t2) + ' g (<button class="btn link" style="min-height:0;padding:0;font-size:inherit" data-act="step" data-v="data">change</button>).</p></div>';
+  const nch = rs.filter(r => r.status !== 'wait' && (r.action !== 'keep' || r.hasComp)).length;
+  h += (nch ? '<div class="panel todo"><div><b>' + nch + ' head' + (nch > 1 ? 's' : '') + ' to change</b><p class="small t2">Open Apply to get the exact values to type on the machine.</p></div><button class="btn pri" data-act="step" data-v="apply">Show me what to enter →</button></div>' : '<div class="panel"><b>Nothing to change right now</b><p class="small t2">All heads are on target. Load newer data after more production to check again.</p></div>') + modeSeg();
+  h += '<div class="grid g4">' + tile('Capability Cpk', b.cpk, a.cpk, gl.cpk, cpf, '', 2, 'up', '') + tile('Bottles outside T1', b.pOutT1 * 100, a.pOutT1 * 100, gl.pOutT1 * 100, x => x.toFixed(1), '%', 1, 'down', 'pts') + tile('Weight spread σ', b.sd, a.sd, gl.sd, f2, 'g', 2, 'down') + tile('Giveaway / 1,000', b.giveaway, a.giveaway, gl.giveaway, f2, 'kg', 2, 'down', 'kg') + '</div>';
+  h += '<div class="help"><b>Reading this:</b> <b>Cpk</b> says how comfortably the bottles fit inside T1: 1.33 or more is capable, 1.0 just fits, below 1.0 bottles regularly fall outside. Teal always means <b>proposed</b>, grey means <b>now</b>.</div><div class="stats3" style="margin:12px 0"><span class="pill s-adjust">' + sm.counts.adjust + ' adjust</span><span class="pill s-ok">' + sm.counts.ok + ' on target</span><span class="pill s-check">' + sm.counts.check + ' check</span><span class="pill s-wait">' + sm.counts.wait + ' waiting</span><span>' + nc + ' head' + (nc === 1 ? '' : 's') + ' can follow flow, pressure, temperature or density</span></div>';
+  h += sec('Candles per head · now vs proposed', '<div class="panel">' + chartCandles(rs) + '</div>', 'Each candle shows where the bottles of one head land. The goal: a short candle sitting on the target line, inside the teal band. Tap a head to open it.');
+  const lm = lineMachine(rs); if (lm) h += sec('Trend · bottles outside T1', '<div class="panel flat"><div class="pad">' + lm + '</div></div>', 'The same recent bottles in the order they were filled, with today’s setpoints (grey) and with the proposal (teal). Drag a finger across to read it.');
+  h += sec('Capability Cpk per head', '<div class="panel">' + chartCpk(rs) + '</div><details class="panel"><summary>Show as table</summary>' + capTable(rs) + '</details>', 'Cpk is how comfortably the process fits inside T1: 1.0 just fits, 1.33 or more is considered capable. 0 means the average is outside the limits.');
+  const dr = [{ label: 'Now', d: decompSum(rs, 'before') }, { label: ST.mode === 'fixed' ? 'Base only' : 'Proposed', d: decompSum(rs, ST.mode === 'fixed' ? 'fixed' : 'after') }, { label: 'Goal', d: decompSum(rs, 'goal') }];
+  h += sec('What the algorithm improves', '<div class="panel">' + chartDecomp(dr) + '</div>', 'Mean squared weight error (g²) split into three causes. The base value removes the <b>offset</b>; letting the ' + UNM() + ' follow the conditions removes the <b>blue</b> part. The grey part is random and stays.');
+  h += sec('Why changes are proposed', whyPanel(rs, sm));
+  return h;
+}
+function capTable(rs) {
+  return '<div style="overflow-x:auto"><table class="t"><thead><tr><th>Head</th><th class="r">Cpk now</th><th class="r">Proposed</th><th class="r">Goal</th><th class="r">Out T1 now</th><th class="r">Proposed</th><th class="r">σ now</th><th class="r">Proposed</th></tr></thead><tbody>' + rs.filter(r => r.before && r.status !== 'wait').map(r => { const a = PA(r), g = r.goal || a; return '<tr><td><b>H' + r.head + '</b></td><td class="r mono">' + cpf(r.before.cpk) + '</td><td class="r"><b class="p">' + cpf(a.cpk) + '</b></td><td class="r mono">' + cpf(g.cpk) + '</td><td class="r mono">' + pc(r.before.pOutT1) + '%</td><td class="r"><b class="p">' + pc(a.pOutT1) + '%</b></td><td class="r mono">' + f2(r.before.sd) + '</td><td class="r"><b class="p">' + f2(a.sd) + '</b></td></tr>'; }).join('') + '</tbody></table></div>';
+}
+function whyPanel(rs, sm) {
+  const act = rs.filter(r => r.status !== 'wait' && r.status !== 'check'), off = act.filter(r => r.action !== 'keep').length, comp = rs.filter(r => r.hasComp).length, chk = sm.counts.check, fb = rs.filter(r => r.mode === 'feedback' && r.status !== 'wait').length;
+  return '<div class="panel"><ul class="checks">' + (off ? '<li><span class="m y">●</span><span><b>' + off + ' head' + (off > 1 ? 's' : '') + '</b> – the average weight is off target, so the base ' + UNM() + ' moves (in safe steps of ±' + (PCT() ? ST.settings.maxStepPct.toFixed(2) + ' %' : ST.settings.maxStep + ' ms') + ').</span></li>' : '') +
+    (comp ? '<li><span class="m y">●</span><span><b>' + comp + ' head' + (comp > 1 ? 's' : '') + '</b> – weight changes with flow, pressure, temperature or density; the ' + UNM() + ' can follow them instead of staying fixed.</span></li>' : '') +
+    (fb ? '<li><span class="m y">●</span><span><b>' + fb + ' head' + (fb > 1 ? 's' : '') + '</b> – too little evidence for the learned model, so only a cautious feedback step is proposed.</span></li>' : '') + (chk ? '<li><span class="m n2">●</span><span><b>' + chk + ' head' + (chk > 1 ? 's' : '') + '</b> – the spread is large even after compensation; no setpoint can fix that. Check the head.</span></li>' : '') + '</ul><p class="small t2">Open any head to see the full reasoning and what influences it.</p></div>';
+}
+function viewHeads() {
+  if (!ST.results.length) return viewData();
+  return modeSeg() + '<div class="grid hgrid" style="grid-template-columns:1fr">' + ST.results.map((r, i) => {
+    const b = r.before, a = PA(r), done = ST.log.find(l => l.head === r.head && l.to === r.aNew && r.action !== 'keep'), showCmp = b && r.status !== 'wait';
+    return '<button class="hcard s-' + r.status + '" data-act="head" data-i="' + i + '"><div class="top2"><span class="hn">Head ' + r.head + '</span><span class="pill s-' + r.status + '">' + STATUS[r.status] + '</span></div>' +
+      (r.status === 'wait' ? '<div class="setp t2" style="font-size:16px">Keep ' + lvl(r.aNow) + '</div>' : '<div class="setp">' + (r.action === 'keep' ? (r.hasComp ? 'Base ' : 'Keep ') + lvn(r.aNow) + '<span class="unit"> ' + UT() + '</span>' : lvn(r.aNow) + '<span class="arrow">→</span>' + lvn(r.aNew) + '<span class="unit"> ' + UT() + '</span><span class="d">' + dlt(r.delta) + '</span>') + '</div>') + (ST.mode === 'full' ? followTags(r) : '') +
+      (showCmp ? '<div class="cmp">' + cmpRow('Capability Cpk', cpf(b.cpk), cpf(a.cpk)) + cmpRow('Outside T1', pc(b.pOutT1) + '%', pc(a.pOutT1) + '%') + cmpRow('Spread σ', f2(b.sd) + ' g', f2(a.sd) + ' g') + cmpRow('Average error', sg(b.err, 1) + ' g', sg(a.err, 1) + ' g') + '</div>' + miniCpk(b, a) : '') +
+      '<div class="reason"><b>Why:</b> ' + esc(r.reason || '') + (done ? ' · <span class="y">marked applied</span>' : '') + '</div><span class="more">Full reasoning and charts →</span></button>';
+  }).join('') + '</div>';
+}
+const cmpRow = (label, n, p) => '<div class="t2">' + label + '</div><div class="v">' + n + '<i>→</i><b>' + p + '</b></div>';
+const bvpRow = (label, n, p, note) => '<div>' + label + (note ? '<br><span class="small mute">' + note + '</span>' : '') + '</div><div class="n">' + n + '</div><div class="p">' + p + '</div>';
+function lawText(r, forPlc) {
+  const c = r.comp; if (!c || !c.terms.length) return '';
+  const nm = k => forPlc ? colName(k) : vName(k);
+  return (PCT() ? 'Closing point (% of setpoint) = ' + (100 - r.aNew).toFixed(2) : 'Anticipation (ms) = ' + f1(r.aNew)) + c.terms.map(t => '\n   ' + (KC(t) >= 0 ? '+ ' : '− ') + sig3(Math.abs(KC(t))) + ' × (' + nm(t.key) + ' − ' + sig3(t.ref) + ')').join('');
+}
+function influenceRows(r) {
+  const c = r.comp; if (!c) return ''; const by = {}; (r.varShare || []).forEach(v => { by[v.key] = v.share; }); const rows = c.all.slice().sort((a, b) => (by[b.key] || 0) - (by[a.key] || 0));
+  return rows.map(t => { const used = c.terms.some(x => x.key === t.key), sh = by[t.key] || 0, un = unitOf(t.key);
+    return '<div class="infl"><div class="nm">' + vName(t.key) + '</div><div><div class="tr" title="share of the weight variation"><i style="width:' + Math.min(100, sh * 100) + '%"></i></div></div><div class="tx"><span class="pct">' + (sh * 100).toFixed(0) + '% of the spread</span><br>' +
+      (used ? 'When ' + vName(t.key).toLowerCase() + ' goes <b>up by 1' + (un ? ' ' + esc(un) : '') + '</b> the weight moves <b>' + sg(t.g, Math.abs(t.g) < 1 ? 2 : 1) + ' g</b>, so the ' + UNM() + ' is moved <b>' + sg(KC(t), Math.abs(KC(t)) < 10 ? 2 : 1) + (PCT() ? ' %' : ' ms') + '</b>. Typical swing ±' + sig3(t.sd) + (un ? ' ' + esc(un) : '') + ' → ±' + (PCT() ? f2(t.impactMs) + ' %' : f1(t.impactMs) + ' ms') + '.' : 'Hardly moves the weight of this head (±' + f2(t.impactG) + ' g per typical swing), so it is not used.') + '</div></div>'; }).join('') +
+    '<div class="infl"><div class="nm">Random</div><div><div class="tr"><i style="width:' + Math.min(100, (r.noiseShare || 0) * 100) + '%;background:var(--gray)"></i></div></div><div class="tx"><span class="pct">' + ((r.noiseShare || 0) * 100).toFixed(0) + '% of the spread</span><br>Not explained by any measured variable: valve, product, air. It stays whatever the setpoint.</div></div>';
+}
+function viewHead() {
+  const r = ST.results[ST.headSel]; if (!r) return viewHeads(); const st = r.stats || {}, b = r.before, a = PA(r), cmp = b && r.status !== 'wait';
+  let h = '<button class="btn link" data-act="back">‹ All heads</button><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h1 style="margin:0">Head ' + r.head + '</h1><span class="pill s-' + r.status + '">' + STATUS[r.status] + '</span></div>';
+  const changes = r.action !== 'keep' && r.status !== 'wait', plan = r.status !== 'wait' && (changes || r.hasComp);
+  h += '<div class="panel ' + (r.status === 'check' ? 'bad' : plan ? 'hot' : '') + '" style="margin-top:14px"><div class="kicker">Proposal</div><div class="setp" style="font-size:26px;margin:6px 0">' + (!changes ? (r.hasComp ? 'Base ' : 'Keep ') + lvn(r.aNow) + '<span class="unit"> ' + UT() + '</span>' : lvn(r.aNow) + '<span class="arrow">→</span>' + lvn(r.aNew) + '<span class="unit"> ' + UT() + '</span><span class="d">' + dlt(r.delta) + '</span>') + '</div>' + (ST.mode === 'full' ? followTags(r) : '') + '<p class="t2">' + esc(r.advice) + '</p>' +
+    (r.hasComp && ST.mode === 'full' ? '<pre class="law">' + esc(lawText(r, false)).replace(/^(Anticipation \(ms\)|Closing point \(% of setpoint\)) = ([\d.]+)/, '$1 = <b>$2</b>') + '</pre>' : '') +
+    (plan ? '<button class="btn pri block" data-act="copyone">Copy for the PLC</button><button class="btn block" data-act="applied">I applied this on the machine</button>' : '') + '</div>';
+  if (cmp) { const cd = chartCandleHead(r, 'c' + r.head), ln = lineHead(r, 'l' + r.head); if (cd) h += sec('Candles over time', '<div class="panel flat"><div class="pad">' + cd + '</div></div>', 'Bottles grouped in the order they were filled. Tap or drag across the groups to read each one.'); if (ln) h += sec('Trend over time', '<div class="panel flat"><div class="pad">' + ln + '</div></div>', 'Rolling average and spread. You want lines inside the teal band and low.'); }
+  if (cmp) h += sec('Dosing now vs proposed', '<div class="panel flat"><div class="pad">' + modeSeg() + '</div><div class="pad">' + chartHead(r, 'h' + r.head) + '</div></div>', 'Drag a finger across the chart to read any bottle. Top: the weight. Middle: the ' + UNM() + ' – grey is what the PLC applied, teal is what the proposal would apply bottle by bottle. Below: the conditions it reacts to.');
+  else if (r.series && r.series.length > 5) h += sec('Weights so far', '<div class="panel flat"><div class="pad">' + chartHead(r, 'h' + r.head) + '</div></div>');
+  if (cmp) {
+    h += sec('Before and proposed', '<div class="panel"><div class="bvp"><div class="h">Measure</div><div class="h n">Now</div><div class="h p">Proposed</div>' + bvpRow('Capability Cpk', cpf(b.cpk), cpf(a.cpk), 'Cp ' + cpf(b.cp) + ' → ' + cpf(a.cp)) + bvpRow('Outside T1 (±' + f1(st.t1) + ' g)', pc(b.pOutT1) + ' %', pc(a.pOutT1) + ' %') + bvpRow('Expected outside T1', f0(b.ppm) + ' ppm', f0(a.ppm) + ' ppm', 'from the normal curve') +
+      bvpRow('Average weight', f1(st.target + b.err) + ' g', f1(st.target + a.err) + ' g') + bvpRow('Error vs target', sg(b.err, 2) + ' g', sg(a.err, 2) + ' g') + bvpRow('Too heavy', pc(b.pHeavy) + ' %', pc(a.pHeavy) + ' %', 'giveaway') + bvpRow('Too light', pc(b.pLight) + ' %', pc(a.pLight) + ' %', 'reject risk') + bvpRow('Giveaway per 1,000', f2(b.giveaway) + ' kg', f2(a.giveaway) + ' kg') + bvpRow('Spread σ', f2(b.sd) + ' g', f2(a.sd) + ' g', r.hasComp ? 'reduced by following conditions' : 'a fixed setpoint cannot change it') + bvpRow('Base ' + UNM(), lvl(r.aNow), lvl(r.aNew)) + '</div></div>');
+    h += sec('Capability', '<div class="panel">' + chartCap(r) + '</div>', 'How the weights are distributed against the tolerance limits. A narrow curve centred between −T1 and +T1 is a capable process.');
+  }
+  if (r.trace && r.trace.length) h += sec('Why this suggestion', '<div class="panel"><ol class="trace">' + r.trace.map(t => '<li><div><b>' + esc(t.t.replace(/^\d+ · /, '')) + '</b><span>' + esc(t.x) + '</span></div></li>').join('') + '</ol></div>');
+  if (r.comp && r.decomp) {
+    h += sec('What influences the weight', '<div class="panel">' + influenceRows(r) + '<p class="small mute" style="margin-top:8px">Variables that move together (for example flow and pressure) share their effect, so the split between them is approximate.</p></div>');
+    const rows = [{ label: 'Now', d: r.decomp.before }, { label: ST.mode === 'fixed' ? 'Base only' : 'Proposed', d: ST.mode === 'fixed' ? r.decomp.fixed : r.decomp.after }, { label: 'Goal', d: r.decomp.goal }];
+    h += sec('What the proposal removes', '<div class="panel">' + chartDecomp(rows) + '</div>', 'Squared weight error (g²) of this head, by cause.');
+  }
+  if (r.comp && r.comp.terms.length) h += sec('Compensation law', '<div class="panel"><pre class="law">' + esc(lawText(r, true)).replace(/^(Anticipation \(ms\)|Closing point \(% of setpoint\)) = ([\d.]+)/, '$1 = <b>$2</b>') + '</pre><p class="small t2">Limited to ±' + (PCT() ? r.comp.dynMax.toFixed(2) + ' %' : r.comp.dynMax + ' ms') + ' around the base, and each input is clamped to the range seen in your data (' + r.comp.terms.map(t => vName(t.key) + ' ' + sig3(t.lo) + '–' + sig3(t.hi)).join(', ') + '). Use signals that are available <b>before</b> the valve closes (live value or the previous fill).</p></div>');
+  if (r.checks && r.checks.length) h += sec('Safety checks', '<div class="panel"><ul class="checks">' + r.checks.map(c => '<li><span class="m ' + (c.ok ? 'y' : 'n2') + '" aria-label="' + (c.ok ? 'passed' : 'not passed') + '">' + (c.ok ? '✓' : '✗') + '</span><span><b>' + esc(c.label) + '</b><br><span class="t2 small">' + esc(c.detail) + '</span></span></li>').join('') + '</ul>' +
+    (r.sufficiency && r.sufficiency.need ? '<div class="small mute">Usable data ' + r.sufficiency.have + ' · needed ' + r.sufficiency.need + '</div><div class="bar"><i style="width:' + Math.min(100, Math.round(100 * r.sufficiency.have / r.sufficiency.need)) + '%"></i></div>' : '') + '</div>');
+  if (r.validation) h += '<div class="panel small t2"><b style="color:var(--text)">Check against newer bottles</b><br>Model error ' + f2(Math.sqrt(Math.min(r.validation.mseRidge, r.validation.mseRLS))) + ' g vs ' + f2(Math.sqrt(r.validation.mseFeedback)) + ' g for simple weight feedback, on the newest ' + r.validation.nHold + ' bottles. In use: ' + (r.mode === 'learned' ? 'physics + ' + (r.model && r.model.name === 'RLS' ? 'adaptive correction (RLS)' : 'fixed correction (Ridge)') : 'simple feedback') + '.' + (r.nOutliers ? ' ' + r.nOutliers + ' implausible weight' + (r.nOutliers > 1 ? 's' : '') + ' ignored (empty or double fills).' : '') + '</div>';
+  return h;
+}
+function plcText(r) {
+  const ch = r.action !== 'keep' || r.hasComp; if (!ch || r.status === 'wait') return 'Head ' + r.head + ': keep ' + lvl(r.aNow);
+  return 'Head ' + r.head + (r.status === 'check' ? '  [CHECK HEAD – spread too large]' : '') + '\n' + (ST.mode === 'full' && r.hasComp ? lawText(r, true) + '\n   limit |compensation| ≤ ' + (PCT() ? r.comp.dynMax.toFixed(2) + ' %' : r.comp.dynMax + ' ms') + '; clamp inputs to ' + r.comp.terms.map(t => colName(t.key) + ' ' + sig3(t.lo) + '..' + sig3(t.hi)).join(', ') : (PCT() ? 'Base closing point = ' + lvl(r.aNew) + ' of setpoint (was ' + lvl(r.aNow) + ')' : 'Base anticipation = ' + f1(r.aNew) + ' ms (was ' + f1(r.aNow) + ')'));
+}
+function viewApply() {
+  if (!ST.results.length) return viewData(); const ch = ST.results.filter(r => r.status !== 'wait' && (r.action !== 'keep' || r.hasComp)), D = PCT() ? ST.settings.maxStepPct : ST.settings.maxStep;
+  let h = '<div class="panel ' + (ch.length ? 'hot' : '') + '"><div class="kicker">Setpoints to enter on the machine</div><h2 style="margin-top:6px">' + (ch.length ? ch.length + ' head' + (ch.length > 1 ? 's' : '') + ' to change' : 'Nothing to change right now') + '</h2><p class="small t2">DoseTuner only recommends. You type these values at the machine; the PLC keeps authority.</p></div>' + (ch.length ? modeSeg() : '');
+  if (ch.length) {
+    h += '<h3>Base ' + UNM() + '</h3><div class="panel" style="padding:0;overflow:hidden"><table class="t"><thead><tr><th>Head</th><th class="r">Now (' + UT() + ')</th><th class="r">New (' + UT() + ')</th><th class="r hide-m">Rounds</th><th></th></tr></thead><tbody>' + ch.map(r => { const done = ST.log.find(l => l.head === r.head && l.to === r.aNew);
+      return '<tr><td><b>Head ' + r.head + '</b>' + (r.status === 'check' ? '<br><span class="pill s-check">Check head</span>' : '') + '</td><td class="r mono">' + lvn(r.aNow) + '</td><td class="r mono" style="color:var(--teal2);font-size:17px;font-weight:600">' + lvn(r.aNew) + (r.delta ? '<br><span style="color:var(--amber);font-size:12px">' + dlt(r.delta) + '</span>' : '') + '</td><td class="r mono hide-m">' + (r.action === 'keep' ? '–' : Math.max(1, Math.ceil(Math.abs(r.rawDelta) / D))) + '</td><td class="r">' + (done ? '<span class="y small">✓ applied</span>' : '<button class="btn" style="min-height:40px;padding:6px 12px;font-size:13px" data-act="mark" data-h="' + r.head + '">Mark applied</button>') + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    const cp = ch.filter(r => r.hasComp);
+    if (ST.mode === 'full' && cp.length) h += '<h3>Let the ' + UNM() + ' follow the conditions</h3><div class="panel"><p class="small t2">Instead of one fixed value, the PLC computes the ' + UNM() + ' for every fill from live signals. Same base as above, plus:</p>' + cp.map(r => '<details open><summary>Head ' + r.head + ' · σ ' + f2(r.comp.sdFixed) + ' → ' + f2(r.comp.sdAfter) + ' g</summary><pre class="law">' + esc(lawText(r, true)) + '</pre></details>').join('') + '</div>';
+    h += '<button class="btn pri block" data-act="copyall">Copy everything for the PLC</button>';
+  }
+  h += sec('What to do next', '<div class="panel"><ol class="steplist"><li><div><b>Enter the new values at the machine</b><p class="small t2">Only the heads listed above. Heads not listed stay as they are.</p></div></li><li><div><b>Let the machine run</b><p class="small t2">At least 100 more bottles per head, filled and weighed.</p></div></li><li><div><b>Export the PLC history again and load it here</b><p class="small t2">Base moves are limited to ±' + (PCT() ? D.toFixed(2) + ' %' : D + ' ms') + ' per round, so a head may need several. The tool checks the result and proposes the next step.</p></div></li></ol></div>');
+  return h;
+}
+const numRow = (id, label, val, step, hint) => '<div class="row"><label for="' + id + '">' + label + (hint ? '<br><span class="small mute">' + hint + '</span>' : '') + '</label><input type="number" id="' + id + '" step="' + step + '" value="' + val + '"></div>';
+function viewSettings() {
+  const s = ST.settings;
+  return '<button class="btn link" data-act="closeset">‹ Back</button><h1>Settings</h1><div class="panel"><b>Safety</b>' + (PCT() ? numRow('s_maxStepPct', 'Max change of the closing point per round (% of setpoint)', s.maxStepPct, 0.05, 'Bigger needs are done in several rounds') + numRow('s_dynMaxPct', 'Max compensation around the base (± % of setpoint)', s.dynMaxPct, 0.1, 'Limits how far the closing point may follow the conditions') : numRow('s_maxStep', 'Max change of the base per round (ms)', s.maxStep, 0.5, 'Bigger needs are done in several rounds') + numRow('s_dynMax', 'Max compensation around the base (± ms)', s.dynMax, 1, 'Limits how far the anticipation may follow the conditions')) + numRow('s_aimOffset', 'Aim above target by (g)', s.aimOffset, 0.1, 'e.g. 0.3 to stay clear of the lower limit') +
+    numRow('s_deadband', 'No change if within (× T1)', s.deadbandFrac, 0.05, 'Dead-band; avoids chasing noise') + numRow('s_minN', 'Minimum weighed bottles per head', s.minN, 5, 'Below this: no recommendation') + '</div>' +
+    (PCT() ? '<div class="help"><b>Direction:</b> a lower closing point (% of setpoint) always closes earlier and gives less product, so there is nothing to set.</div>' : '') + (PCT() ? '' : '<div class="panel"><b>Anticipation direction</b><div class="row"><label for="s_aSign">Closing earlier gives…</label><select id="s_aSign"><option value="1"' + (s.aSign === 1 ? ' selected' : '') + '>less product (normal)</option><option value="-1"' + (s.aSign === -1 ? ' selected' : '') + '>more product (inverted)</option></select></div><p class="small t2">Wrong direction means every proposal goes the wrong way. Check this once on your machine.</p></div>') +
+    '<details class="panel"><summary>Advanced</summary>' + numRow('s_lambdaF', 'RLS forgetting factor', s.lambdaF, 0.001, '0.995 ≈ last 200 bottles') + numRow('s_delta', 'Risk level δ for the data check', s.delta, 0.01, '0.05 = 95% confidence') + numRow('s_epsFrac', 'Accuracy wanted (× T1)', s.epsFrac, 0.05, 'Smaller needs more data') + numRow('s_window', 'Most recent bottles per head used', s.window, 100) + '</details>' +
+    '<button class="btn pri block" data-act="saveset">Save and re-learn</button><button class="btn block" data-act="reset">Reset settings</button><button class="btn block ghost" data-act="forget">Delete saved data from this phone</button>';
+}
+
+/* ---------- shell ---------- */
+const STEPS = [['data', 'Data', 'Load the PLC history and set the tolerance limits.', 'Step 1 · Data'], ['result', 'Result', 'Where the machine is now and what the proposal gains, all heads together.', 'Step 2 · Result'],
+  ['heads', 'Heads', 'Each head: now vs proposed, and why. Tap a head for the full reasoning.', 'Step 3 · Heads'], ['apply', 'Apply', 'The setpoints and compensation to enter on the machine.', 'Step 4 · Apply']];
+const stepOf = v => v === 'head' ? 'heads' : v === 'busy' ? 'data' : v === 'settings' ? (ST._prev || 'data') : v;
+let lastW = 0;
+function render() {
+  const view = ST.view, cur = stepOf(view), has = ST.results.length > 0, idx = STEPS.findIndex(s => s[0] === cur);
+  $('#steps').innerHTML = STEPS.map((s, i) => '<button data-act="step" data-v="' + s[0] + '"' + (s[0] === cur && view !== 'settings' ? ' aria-current="step"' : '') + ((!has && i > 0) ? ' disabled' : '') + '><b>' + (i + 1) + '</b>' + s[1] + '</button>').join('');
+  const st = STEPS[Math.max(0, idx)], nx = STEPS[idx + 1], nextOk = has && nx && view !== 'busy' && view !== 'settings';
+  $('#strip').firstElementChild.innerHTML = view === 'settings' ? '<div><div class="k">Settings</div><p>Safety limits and how the learning behaves.</p></div>' : view === 'busy' ? '<div><div class="k">Learning</div><p>One moment…</p></div>' : '<div><div class="k">' + st[3] + '</div><p>' + (view === 'head' ? 'Full reasoning for one head.' : st[2]) + '</p></div>' + (nextOk ? '<button class="next" data-act="step" data-v="' + nx[0] + '"><small>Step ' + (idx + 2) + '</small>' + nx[1] + ' →</button>' : '');
+  const chip = $('#chip'); if (ST.parsed) { chip.hidden = false; chip.textContent = ST.simulated ? 'Simulated data' : ST.fileName; chip.className = 'chip' + (ST.simulated ? ' sim' : ''); } else chip.hidden = true;
+  app.innerHTML = ({ data: viewData, busy: viewBusy, result: viewResult, heads: viewHeads, head: viewHead, apply: viewApply, settings: viewSettings }[view] || viewData)();
+  lastW = app.clientWidth; wireScrubs(); wireCandles(); wireLines(); wireTol();
+  if (view === 'head') { const r = ST.results[ST.headSel]; if (r) CH['h' + r.head + '_aNew'] = AW(r); }
+}
+
+/* ---------- events ---------- */
+function readSettings() {
+  const g = (id, d) => { const e = $('#' + id), v = e ? parseFloat(e.value) : NaN; return isFinite(v) ? v : d; }, s = ST.settings;
+  s.maxStep = Math.max(0.1, g('s_maxStep', s.maxStep)); s.maxStepPct = Math.max(0.01, g('s_maxStepPct', s.maxStepPct)); s.dynMaxPct = Math.max(0, g('s_dynMaxPct', s.dynMaxPct)); s.dynMax = Math.max(0, g('s_dynMax', s.dynMax)); s.aimOffset = g('s_aimOffset', s.aimOffset); s.deadbandFrac = Math.max(0, g('s_deadband', s.deadbandFrac)); s.minN = Math.max(16, Math.round(g('s_minN', s.minN)));
+  s.lambdaF = Math.min(0.9999, Math.max(0.9, g('s_lambdaF', s.lambdaF))); s.delta = Math.min(0.5, Math.max(0.001, g('s_delta', s.delta))); s.epsFrac = Math.max(0.05, g('s_epsFrac', s.epsFrac)); s.window = Math.max(100, Math.round(g('s_window', s.window)));
+  const sgn = $('#s_aSign'); if (sgn) s.aSign = parseInt(sgn.value, 10) === -1 ? -1 : 1;
+}
+const allText = () => ST.results.map(plcText).join('\n\n');
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return; const a = b.dataset.act;
+  if (a === 'step') { if (ST.view === 'settings' || ST.results.length || b.dataset.v === 'data') { ST.view = b.dataset.v; render(); window.scrollTo(0, 0); } }
+  else if (a === 'mode') { ST.mode = b.dataset.m; const y = window.scrollY; render(); window.scrollTo(0, y); }
+  else if (a === 'settings') { if (ST.view !== 'settings') ST._prev = stepOf(ST.view); ST.view = 'settings'; render(); window.scrollTo(0, 0); }
+  else if (a === 'closeset') { ST.view = ST._prev || 'data'; render(); }
+  else if (a === 'home') { Object.assign(ST, { parsed: null, results: [], summary: null, view: 'data', tol: null, dev: null }); render(); }
+  else if (a === 'demo') runDemo();
+  else if (a === 'pick') $('#file').click();
+  else if (a === 'paste') { const t = $('#paste').value; ST.pasted = t; if (loadText(t, 'pasted text', false)) render(); }
+  else if (a === 'resume') { const s = ST.saved; if (s && loadText(s.text, s.name, false)) { Object.assign(ST.settings, s.settings || {}); if (s.map) ST.map = s.map; if (s.tol) ST.tol = s.tol; ST.log = s.log || []; prepare(); runAnalysis(); } }
+  else if (a === 'learn') runAnalysis();
+  else if (a === 'tolreset') { ST.tol = { t1: ST.tol.file.t1, t2: ST.tol.file.t2, file: ST.tol.file, user: false }; render(); }
+  else if (a === 'head') { ST.headSel = +b.dataset.i; ST.view = 'head'; render(); window.scrollTo(0, 0); }
+  else if (a === 'back') { ST.view = 'heads'; render(); }
+  else if (a === 'copyone') { const r = ST.results[ST.headSel]; showText('Head ' + r.head, plcText(r)); }
+  else if (a === 'copyall') showText('All heads', allText());
+  else if (a === 'applied') { const r = ST.results[ST.headSel]; ST.log.push({ head: r.head, from: r.aNow, to: r.aNew, t: Date.now() }); saveMeta(); toast('Noted. Reload newer data after these bottles are weighed.'); }
+  else if (a === 'mark') { const r = ST.results.find(x => x.head === +b.dataset.h); ST.log.push({ head: r.head, from: r.aNow, to: r.aNew, t: Date.now() }); saveMeta(); render(); }
+  else if (a === 'saveset') { readSettings(); saveMeta(); if (ST.parsed) runAnalysis(); else { ST.view = 'data'; render(); toast('Saved'); } }
+  else if (a === 'reset') { ST.settings = Object.assign({}, C.DEFAULTS); render(); toast('Defaults restored'); }
+  else if (a === 'forget') { kvDel('session'); ST.saved = null; toast('Deleted'); }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'file') { const f = t.files && t.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { if (loadText(String(rd.result), f.name, false)) render(); }; rd.onerror = () => toast('Could not read that file'); rd.readAsText(f); t.value = ''; }
+  else if (t.dataset && t.dataset.map) { const k = t.dataset.map; if (t.value === '') delete ST.map[k]; else ST.map[k] = parseInt(t.value, 10); ST.tol = null; ST.unit = detect(); if (!C.missingRequired(ST.map, ST.unit).length) prepare(); render(); }
+  else if (t.id === 'unitsel') { ST.unitOverride = t.value; ST.unit = detect(); ST.tol = null; if (!C.missingRequired(ST.map, ST.unit).length) prepare(); render(); }
+  else if (t.id === 'tol_t1' || t.id === 'tol_t2') { const v = parseFloat(t.value); if (isFinite(v) && v > 0 && ST.tol) { if (t.id === 'tol_t1') { ST.tol.t1 = v; if (ST.tol.t2 <= v) ST.tol.t2 = +(v * 2).toFixed(2); } else ST.tol.t2 = Math.max(v, ST.tol.t1 + 0.05); ST.tol.user = true; ST.stale = true; saveMeta(); render(); } }
+});
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (Math.abs(app.clientWidth - lastW) > 12 && ['result', 'head', 'data'].includes(ST.view)) { const y = window.scrollY; render(); window.scrollTo(0, y); } }, 150); });
+kvGet('session').then(s => { if (s && s.text) { ST.saved = s; if (ST.view === 'data' && !ST.parsed) render(); } });
+window.__app = { ST, C, loadText, runAnalysis, render, runDemo };
+render();
+/*__PWA_SW__*/
+</script>
+</body>
+</html>

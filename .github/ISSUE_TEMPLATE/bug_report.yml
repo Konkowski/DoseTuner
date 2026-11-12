@@ -1,0 +1,17 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes: { label: What happened?, description: What did you expect instead? }
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes: { label: Steps to reproduce }
+  - type: input
+    id: env
+    attributes: { label: Device and browser, placeholder: "e.g. Pixel 8, Chrome 130" }
+  - type: textarea
+    id: data
+    attributes: { label: Sample data, description: "Anonymised CSV header + a few rows (no confidential data)." }
