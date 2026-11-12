@@ -65,7 +65,7 @@ ol.trace b{display:block;font-size:14px;color:var(--text);margin-bottom:1px}ol.t
 ul.checks{list-style:none}ul.checks li{display:flex;gap:10px;padding:7px 0;font-size:14.5px}ul.checks .m{font-weight:800;min-width:18px}
 svg.ch{display:block;width:100%;height:auto;overflow:visible}svg.ch text{fill:var(--t2);font-family:var(--sans);font-size:11px}svg.ch .mono{font-family:var(--mono)}svg.ch .tx{fill:var(--text)}svg.scrub{touch-action:pan-y;cursor:crosshair;-webkit-user-select:none;user-select:none}svg.tolsvg{touch-action:none;-webkit-user-select:none;user-select:none}
 .legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;color:var(--t2);margin-top:8px}.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}.legend i.sq{height:10px;width:10px;border-radius:2px;vertical-align:-1px}.legend i.dot{height:9px;width:9px;border-radius:50%;vertical-align:-1px}
-.ro{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--t2);padding:8px 12px;margin:0 0 8px;background:var(--deep);border:1px solid var(--line);border-radius:10px;min-height:56px}.ro b{color:var(--text);font-family:var(--mono);font-weight:600}.ro .k{color:var(--text);font-weight:600;flex-basis:100%}
+.ro{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--t2);padding:8px 12px;margin:0 0 8px;background:var(--deep);border:1px solid var(--line);border-radius:10px;min-height:56px}.rd b{color:var(--text);font-family:var(--mono);font-weight:600}.ro .k{color:var(--text);font-weight:600;flex-basis:100%}
 .ro .g{display:inline-flex;align-items:center;gap:6px}.ro .g i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .seg{display:inline-flex;background:var(--deep);border:1px solid var(--line2);border-radius:10px;padding:3px;gap:3px;margin:6px 0}.seg button{background:none;border:0;border-radius:8px;padding:8px 14px;min-height:40px;font-size:14px;font-weight:600;color:var(--t2)}.seg button[aria-pressed=true]{background:var(--teal);color:#04201c}
 .bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--teal)}
@@ -89,6 +89,21 @@ details{margin:8px 0}summary{cursor:pointer;min-height:40px;padding:8px 0;font-w
 .todo{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-color:rgba(245,147,61,.6);background:linear-gradient(180deg,rgba(245,147,61,.08),var(--panel))}.todo b{font-size:16px}.todo p{margin:2px 0 0}
 .help{font-size:13px;color:var(--t2);background:var(--deep);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0}.help b{color:var(--text)}
 @media(min-width:760px){h1{font-size:30px}}@media(max-width:759px){.hide-m{display:none}}
+
+/* machine, head visual, anatomy, steps */
+.mach .tankrow{display:flex;gap:12px;align-items:center;margin-bottom:6px}.ros{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}.rd{font-size:12px;border:1px solid var(--line2);border-radius:8px;padding:3px 8px;color:var(--t2);display:inline-flex;gap:5px;align-items:baseline}.rd b{color:var(--text);font-family:var(--mono);font-weight:600}.rd u{text-decoration:none;color:var(--mute);font-size:11px}.rd i{font-style:normal}
+.mrow{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:4px}@media(min-width:760px){.mrow{grid-template-columns:repeat(10,1fr)}}
+.mh{background:none;border:1px solid transparent;border-radius:10px;padding:0 0 6px;text-align:center;min-width:0}.mh:hover{background:rgba(45,212,191,.06);border-color:var(--line2)}.mh svg{display:block;width:100%;height:auto}.mh b{display:block;font-family:var(--head);font-size:14px;margin-top:2px}.mh .cp{display:block;font-size:10.5px;color:var(--t2);line-height:1.25;padding:0 2px;word-break:break-word}
+.mh.s-adjust b{color:var(--amber)}.mh.s-check b{color:var(--red)}.mh.s-ok b{color:var(--teal2)}.mh.s-wait b{color:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--t2);margin-top:8px}.legend span{display:inline-flex;gap:6px;align-items:center}.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.hows{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}@media(min-width:760px){.hows{grid-template-columns:repeat(4,1fr)}}.how{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:10px}.how>b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--tealbg);border:1px solid rgba(45,212,191,.5);color:var(--teal2);display:grid;place-items:center;font-size:13px}.how span{display:block;font-weight:600;font-size:14px}.how small{display:block;font-size:12px;color:var(--t2);line-height:1.35;margin-top:2px}
+.g2c{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center}.g2c svg{width:100%;max-width:170px;height:auto}.cap{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}.cap.y{color:var(--teal2)}.bv{font-size:18px;font-weight:600;margin-top:2px}.bv.y{color:var(--teal2)}
+.cbar{margin-top:10px;text-align:left}.cbar .trk{position:relative;height:12px;border-radius:6px;background:var(--line);overflow:hidden}.cbar .trk i{position:absolute;left:0;top:0;bottom:0}.cbar .trk i.rest{background:repeating-linear-gradient(135deg,var(--line2) 0 3px,transparent 3px 6px)}.cbar .mk{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--text)}.cbar .lb{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:var(--mute);margin-top:4px;line-height:1.3}.cbar .lb span:nth-child(2){text-align:center;color:var(--t2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{background:var(--deep);border:1px solid var(--line2);border-radius:99px;padding:7px 14px;min-height:38px;font-size:14px;font-weight:600;color:var(--t2)}.chips button[aria-pressed=true]{background:var(--tealbg);border-color:rgba(45,212,191,.7);color:var(--teal2)}.chips.four{display:grid;grid-template-columns:1fr 1fr;gap:6px}@media(min-width:760px){.chips.four{grid-template-columns:repeat(4,1fr)}}.chips.four button{border-radius:10px;text-align:left;display:flex;gap:8px;align-items:center;font-size:13px}.chips.four button b{width:20px;height:20px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:11px;flex:none}
+.eq{font-family:var(--mono);font-size:15px;margin:12px 0 4px;line-height:1.9;word-break:break-word}.eq.lawline{font-size:13.5px;line-height:2}.tk{display:inline-block;padding:0 7px;border-radius:6px;border:1px solid var(--line2);color:var(--t2)}.tk.lit,.tk.g,.tk.o,.tk.b,.tk.y,.tk.r{border-color:currentColor}.tk.y{color:var(--teal2)}.tk.o{color:var(--orange)}.tk.b{color:var(--blue)}.tk.r{color:var(--red)}.tk.g{color:var(--t2)}.tk.o,.tk.b,.tk.g{background:rgba(255,255,255,.03)}.tk:not(.lit):not(.g):not(.o):not(.b){opacity:.45}.eq .tk.b,.eq .tk.o,.eq .tk.g{opacity:1}
+span.o{color:var(--orange);font-weight:600}span.b{color:var(--blue);font-weight:600}.say{font-size:14px;color:var(--t2);margin:2px 0 8px;min-height:42px}.say b{color:var(--text)}
+svg.ana{width:100%;max-width:620px;margin:0 auto;height:auto;display:block;touch-action:pan-y}.mrow3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}.mrow3.four{grid-template-columns:repeat(2,1fr)}@media(min-width:560px){.mrow3.four{grid-template-columns:repeat(4,1fr)}}.mrow3 small{display:block;font-size:11px;color:var(--mute);letter-spacing:.04em;text-transform:uppercase;font-weight:600}.mrow3 b{font-size:15px;color:var(--t2)}.mrow3 b.y{color:var(--teal2)}
+.sl{margin:10px 0 2px}.sl label{display:block;font-size:13.5px;margin-bottom:2px}.sl input[type=range]{width:100%;accent-color:#2dd4bf;min-height:34px}
 </style>
 </head>
 <body>
@@ -447,6 +462,168 @@ function miniCpk(b, a) { const sc = v => Math.min(100, 100 * Math.min(v, 3) / 3)
 const sec = (title, body, note) => '<h3>' + title + '</h3>' + (note ? '<p class="small t2" style="margin:-4px 0 8px">' + note + '</p>' : '') + body;
 const modeSeg = () => '<div class="seg" role="group" aria-label="What to show"><button data-act="mode" data-m="full" aria-pressed="' + (ST.mode === 'full') + '">Base + follows conditions</button><button data-act="mode" data-m="fixed" aria-pressed="' + (ST.mode === 'fixed') + '">Base value only</button></div>';
 
+/* ---------- "what is being done" visuals: machine, head, anatomy, steps (additive; the charts above are untouched) ---------- */
+const SCOL = { ok: 'var(--teal)', adjust: 'var(--amber)', check: 'var(--red)', wait: 'var(--gray)' };
+const mean_ = a => a.length ? a.reduce((s, v) => s + v, 0) / a.length : NaN;
+const sd_ = a => { if (a.length < 2) return 0; const m = mean_(a); return Math.sqrt(a.reduce((s, v) => s + (v - m) * (v - m), 0) / a.length); };
+const distOf = (r, w) => { const d = r['dist' + w]; return d && d.length ? d : null; };
+const devOf = (r, w) => { const d = distOf(r, w); return d ? d.map(v => v - r.stats.target) : null; };
+const propKey = () => ST.mode === 'fixed' ? 'Fixed' : 'After';
+function headDrivers(r) {
+  if (!r.series || r.series.length < 12 || !r.series[0] || r.series[0].wNow == null) return [];
+  const by = {}; (r.varShare || []).forEach(v => { by[v.key] = v.share; });
+  return ['Q', 'rho', 'T', 'P'].filter(k => { const x = r.series.map(p => p[k]).filter(isFinite); return x.length > 10 && sd_(x) > 0; }).sort((a, b) => (by[b] || 0) - (by[a] || 0));
+}
+/* ---- physical machine ---- */
+function headSvg(r, i) {
+  const col = SCOL[r.status] || SCOL.wait, t1 = r.stats && r.stats.t1 || 1, dn = devOf(r, 'Now'), dp = devOf(r, propKey());
+  const Y0 = 72, Y1 = 128, YC = (Y0 + Y1) / 2, sc = (YC - Y0 - 3) / (3 * t1), yOf = e => clampv(YC - e * sc, Y0 + 2, Y1);
+  const eN = dn ? mean_(dn) : null, eP = dp ? mean_(dp) : null, id = 'hb' + i;
+  let s = '<svg viewBox="0 0 64 140" aria-hidden="true" focusable="false"><line x1="0" y1="8" x2="64" y2="8" stroke="#2c343d" stroke-width="5"/><line x1="32" y1="8" x2="32" y2="26" stroke="#2c343d" stroke-width="5"/>' +
+    '<rect x="23" y="26" width="18" height="15" rx="3" fill="#14181d" stroke="' + col + '" stroke-width="1.6"/><circle cx="32" cy="33.5" r="3" fill="' + col + '"/><path d="M28 41h8l-2 9h-4z" fill="#14181d" stroke="#6e7882" stroke-width="1.2"/>' +
+    '<clipPath id="' + id + '"><path d="M26 58h12v13l12 6v45a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V77l12-6z"/></clipPath>';
+  if (eN != null) s += '<g clip-path="url(#' + id + ')"><rect x="10" y="' + yOf(eN).toFixed(1) + '" width="44" height="80" fill="' + col + '" opacity=".42"/><rect x="10" y="' + (YC - t1 * sc).toFixed(1) + '" width="44" height="' + (2 * t1 * sc).toFixed(1) + '" fill="#2dd4bf" opacity=".12"/>' +
+    '<line x1="10" x2="54" y1="' + YC + '" y2="' + YC + '" stroke="#eef1f4" stroke-width=".8" stroke-dasharray="2 2" opacity=".7"/>' + (eP != null && Math.abs(eP - eN) > 0.02 * t1 ? '<line x1="10" x2="54" y1="' + yOf(eP).toFixed(1) + '" y2="' + yOf(eP).toFixed(1) + '" stroke="#5eead4" stroke-width="2"/>' : '') + '</g>';
+  s += '<path d="M26 58h12v13l12 6v45a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V77l12-6z" fill="none" stroke="#9ba6b1" stroke-width="1.4"/>';
+  if (r.status !== 'wait') s += '<line x1="32" y1="51" x2="32" y2="' + (eN != null ? yOf(eN).toFixed(1) : 100) + '" stroke="#5eead4" stroke-width="1.4" stroke-dasharray="2 2" opacity=".55"/>';
+  return s + '</svg>';
+}
+function fleetReadouts(rs) {
+  const out = []; ['Q', 'rho', 'T', 'P'].forEach(k => { const v = []; rs.forEach(r => (r.series || []).slice(-40).forEach(p => { if (isFinite(p[k])) v.push(p[k]); })); if (v.length) out.push('<span class="rd"><i>' + vName(k) + '</i><b>' + sig3(mean_(v)) + '</b>' + (unitOf(k) ? '<u>' + esc(unitOf(k)) + '</u>' : '') + '</span>'); });
+  return out.join('');
+}
+function machineView(rs, note) {
+  const chg = rs.filter(r => r.status !== 'wait' && r.action !== 'keep').length;
+  return '<div class="panel mach"><div class="tankrow"><svg viewBox="0 0 54 46" width="54" height="46" aria-hidden="true"><rect x="6" y="4" width="42" height="34" rx="9" fill="#14181d" stroke="#9ba6b1" stroke-width="1.5"/><path d="M8 24q6-4 12 0t12 0 14 0v10q0 4-4 4H12q-4 0-4-4z" fill="#2dd4bf" opacity=".35"/><line x1="27" y1="38" x2="27" y2="46" stroke="#2c343d" stroke-width="5"/></svg>' +
+    '<div><b>Product tank</b><div class="ros">' + fleetReadouts(rs) + '</div><span class="small mute">Live conditions the heads react to</span></div></div>' +
+    '<div class="mrow">' + rs.map((r, i) => {
+      const cp = r.status === 'wait' ? lvl(r.aNow) : (r.action === 'keep' ? lvl(r.aNow) : lvn(r.aNow) + ' → ' + lvl(r.aNew));
+      return '<button class="mh s-' + r.status + '" data-act="head" data-i="' + i + '" aria-label="Head ' + r.head + ', ' + STATUS[r.status] + '">' + headSvg(r, i) + '<b>H' + r.head + '</b><span class="mono cp">' + cp + '</span></button>'; }).join('') + '</div>' +
+    '<p class="small t2" style="margin-top:8px">' + (note || '') + 'Each head is a valve above a bottle. The bottle shows the <b>average weight today</b> against the target line (the teal band is ±T1). The bright teal line is where the average lands <b>with the proposal</b>. The text below each head is its closing point: ' + (chg ? '<b>' + chg + ' head' + (chg > 1 ? 's' : '') + '</b> would move.' : 'none needs to move.') + ' Tap a head to open it.</p>' +
+    '<div class="legend"><span><i style="background:var(--teal)"></i>On target</span><span><i style="background:var(--amber)"></i>Adjust</span><span><i style="background:var(--red)"></i>Check head</span><span><i style="background:var(--gray)"></i>Collecting data</span></div></div>';
+}
+function howStrip(sm, rs) {
+  const n = rs.filter(r => r.status !== 'wait').length, nch = rs.filter(r => r.status !== 'wait' && (r.action !== 'keep' || r.hasComp)).length;
+  const box = (k, t, x) => '<div class="how"><b>' + k + '</b><div><span>' + t + '</span><small>' + x + '</small></div></div>';
+  return '<div class="hows">' + box('1', 'Weigh', f0(sm.bottles) + ' bottles from the PLC history') + box('2', 'Learn', 'How flow, pressure, temperature and density move each head’s weight') + box('3', 'Propose', nch + ' of ' + n + ' heads get a new closing point') + box('4', 'Apply', 'You type it at the machine. The PLC keeps authority') + '</div>';
+}
+/* ---- one head, physically ---- */
+function bottleSvg(e, t1, col, tag) {
+  const Y0 = 34, Y1 = 150, YC = (Y0 + Y1) / 2, sc = (YC - Y0 - 6) / (3 * t1), y = clampv(YC - e * sc, Y0 + 3, Y1), id = 'bt' + tag;
+  return '<svg viewBox="0 0 150 170" role="img" aria-label="' + tag + ' bottle: average ' + sg(e, 2) + ' g from target"><clipPath id="' + id + '"><path d="M46 8h28v22l22 12v100a8 8 0 0 1-8 8H32a8 8 0 0 1-8-8V42l22-12z"/></clipPath>' +
+    '<g clip-path="url(#' + id + ')"><rect x="20" y="' + y.toFixed(1) + '" width="80" height="150" fill="' + col + '" opacity=".5"/><rect x="20" y="' + (YC - t1 * sc).toFixed(1) + '" width="80" height="' + (2 * t1 * sc).toFixed(1) + '" fill="#2dd4bf" opacity=".14"/></g>' +
+    '<path d="M46 8h28v22l22 12v100a8 8 0 0 1-8 8H32a8 8 0 0 1-8-8V42l22-12z" fill="none" stroke="#9ba6b1" stroke-width="2"/><line x1="14" x2="106" y1="' + YC + '" y2="' + YC + '" stroke="#eef1f4" stroke-width="1.2" stroke-dasharray="4 3"/><line x1="' + 20 + '" x2="' + 100 + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="' + col + '" stroke-width="3"/>' +
+    '<text x="108" y="' + (YC - 3) + '" fill="#9ba6b1" font-size="9" font-family="JetBrains Mono,monospace">target</text><text x="108" y="' + (YC - t1 * sc - 2) + '" fill="#5eead4" font-size="8.5" font-family="JetBrains Mono,monospace" opacity=".8">+T1</text><text x="108" y="' + (YC + t1 * sc + 9) + '" fill="#5eead4" font-size="8.5" font-family="JetBrains Mono,monospace" opacity=".8">−T1</text></svg>';
+}
+function closeBar(a, col, lab) {
+  const cp = 100 - a;
+  return '<div class="cbar" role="img" aria-label="' + lab + ' closing point ' + cp.toFixed(2) + ' percent of setpoint"><div class="trk"><i style="width:' + cp + '%;background:' + col + '"></i><i class="rest" style="left:' + cp + '%;width:' + (100 - cp) + '%"></i><span class="mk" style="left:' + cp + '%"></span></div><div class="lb"><span>0</span><span>valve open until <b class="mono">' + cp.toFixed(2) + ' %</b> of the setpoint</span><span>100</span></div></div>';
+}
+function headVisual(r) {
+  const dn = devOf(r, 'Now'), dp = devOf(r, propKey()); if (!dn || !dp || !PCT()) return '';
+  const t1 = r.stats.t1, eN = mean_(dn), eP = mean_(dp), aP = ST.mode === 'fixed' || !r.hasComp ? r.aNew : r.aNew;
+  const col = SCOL[r.status] || SCOL.wait;
+  return '<h3>What the valve does</h3><div class="panel"><div class="g2c"><div><div class="cap">Now</div>' + bottleSvg(eN, t1, '#9ba6b1', 'now') + '<div class="mono bv">' + sg(eN, 2) + ' g</div><div class="small mute">average vs target</div>' + (PCT() ? closeBar(r.aNow, '#6e7882', 'Now') : '') + '</div>' +
+    '<div><div class="cap y">Proposed</div>' + bottleSvg(eP, t1, '#2dd4bf', 'prop') + '<div class="mono bv y">' + sg(eP, 2) + ' g</div><div class="small mute">average vs target</div>' + (PCT() ? closeBar(aP, '#2dd4bf', 'Proposed') : '') + '</div></div>' +
+    '<p class="small t2" style="margin-top:10px">The valve closes once <b>' + lvl(r.aNow) + '</b> of the setpoint has been dosed; the rest of the bottle fills while it closes. Moving that point earlier or later shifts the whole bottle by about <b>' + sig3(Math.abs(r.slope)) + ' g</b> per ' + (PCT() ? '1 %' : '1 ms') + '. Zoomed view: the bottle shows ±3×T1 around the target.</p></div>';
+}
+/* ---- anatomy of the fit ---- */
+const ANA_CHIPS = [['all', 'Show all'], ['y', 'Y'], ['x', 'X'], ['b0', 'β₀'], ['b', 'β'], ['e', 'ε']];
+function anaState(r, key) {
+  const ks = headDrivers(r); if (!ks.length) return null; const A = ST.ana && ST.ana.head === r.head ? ST.ana : (ST.ana = { head: r.head, k: ks[0], chip: 'all', d0: 0, d1: 0 });
+  if (!ks.includes(A.k)) A.k = ks[0]; const xs = r.series.map(p => p[A.k]), ys = r.series.map(p => p.wNow - r.stats.target), ok = xs.map((x, i) => isFinite(x) && isFinite(ys[i])), X = xs.filter((_, i) => ok[i]), Y = ys.filter((_, i) => ok[i]);
+  const mx = mean_(X), my = mean_(Y), sxx = X.reduce((s, x) => s + (x - mx) * (x - mx), 0), sxy = X.reduce((s, x, i) => s + (x - mx) * (Y[i] - my), 0), b1 = sxx > 0 ? sxy / sxx : 0;
+  return { A, ks, X, Y, mx, my, b1, sx: sd_(X), sy: sd_(Y) };
+}
+function anaPlot(r, S) {
+  const A = S.A, W = 340, H = 210, L = 40, R = 10, T = 12, B = 34, xs = S.X, ys = S.Y, sx = S.sx || 1;
+  const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), ym = Math.max.apply(null, ys.map(Math.abs)) * 1.15 || 1, t1 = r.stats.t1, yr = Math.max(ym, t1 * 1.2);
+  const px = x => L + (x - x0) / ((x1 - x0) || 1) * (W - L - R), py = y => T + (yr - y) / (2 * yr) * (H - T - B);
+  const b0 = S.my + A.d0, b = S.b1 + A.d1, line = x => b0 + b * (x - S.mx), c = A.chip, on = k => c === 'all' || c === k, dim = k => on(k) ? 1 : .22;
+  const rms = Math.sqrt(mean_(xs.map((x, i) => Math.pow(ys[i] - line(x), 2)))), rmsBest = Math.sqrt(mean_(xs.map((x, i) => Math.pow(ys[i] - (S.my + S.b1 * (x - S.mx)), 2)))), rms0 = Math.sqrt(mean_(ys.map(y => y * y)));
+  let g = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="ana" role="img" aria-label="Weight error against ' + vName(A.k) + ' with a fitted line">';
+  g += '<rect x="' + L + '" y="' + py(t1).toFixed(1) + '" width="' + (W - L - R) + '" height="' + (py(-t1) - py(t1)).toFixed(1) + '" fill="#2dd4bf" opacity=".08"/><line x1="' + L + '" x2="' + (W - R) + '" y1="' + py(0).toFixed(1) + '" y2="' + py(0).toFixed(1) + '" stroke="#eef1f4" stroke-width="1" stroke-dasharray="4 3" opacity=".6"/>';
+  g += '<text x="' + (L - 4) + '" y="' + (py(0) + 3).toFixed(1) + '" fill="#9ba6b1" font-size="9.5" text-anchor="end" font-family="JetBrains Mono,monospace">0</text><text x="' + (L - 4) + '" y="' + (py(t1) + 3).toFixed(1) + '" fill="#5eead4" font-size="9" text-anchor="end" font-family="JetBrains Mono,monospace">+T1</text><text x="' + (L - 4) + '" y="' + (py(-t1) + 3).toFixed(1) + '" fill="#5eead4" font-size="9" text-anchor="end" font-family="JetBrains Mono,monospace">−T1</text>';
+  g += '<g opacity="' + dim('e') + '">' + xs.map((x, i) => '<line x1="' + px(x).toFixed(1) + '" x2="' + px(x).toFixed(1) + '" y1="' + py(ys[i]).toFixed(1) + '" y2="' + py(line(x)).toFixed(1) + '" stroke="#ec4067" stroke-width="1" opacity="' + (c === 'e' || c === 'all' ? .55 : 0) + '"/>').join('') + '</g>';
+  g += '<g opacity="' + ((c === 'y' || c === 'all' || c === 'e') ? 1 : .35) + '">' + xs.map((x, i) => '<circle cx="' + px(x).toFixed(1) + '" cy="' + py(ys[i]).toFixed(1) + '" r="' + (c === 'y' ? 3.2 : 2.6) + '" fill="' + (c === 'y' ? '#5eead4' : '#9ba6b1') + '" opacity=".85"/>').join('') + '</g>';
+  g += '<g opacity="' + Math.max(dim('b'), dim('b0')) + '"><line x1="' + px(x0).toFixed(1) + '" y1="' + py(line(x0)).toFixed(1) + '" x2="' + px(x1).toFixed(1) + '" y2="' + py(line(x1)).toFixed(1) + '" stroke="#2dd4bf" stroke-width="2.4"/></g>';
+  if (on('b0')) g += '<g><line x1="' + px(S.mx).toFixed(1) + '" x2="' + px(S.mx).toFixed(1) + '" y1="' + py(0).toFixed(1) + '" y2="' + py(b0).toFixed(1) + '" stroke="#f5933d" stroke-width="3"/><circle cx="' + px(S.mx).toFixed(1) + '" cy="' + py(b0).toFixed(1) + '" r="5" fill="#f5933d"/><text x="' + (px(S.mx) + 8).toFixed(1) + '" y="' + (py(b0 / 2) + 3).toFixed(1) + '" fill="#f5933d" font-size="10.5" font-weight="700">β₀</text></g>';
+  if (on('b')) { const xa = S.mx, xb = S.mx + (x1 - x0) * 0.25; g += '<g><line x1="' + px(xa).toFixed(1) + '" x2="' + px(xb).toFixed(1) + '" y1="' + py(line(xa)).toFixed(1) + '" y2="' + py(line(xa)).toFixed(1) + '" stroke="#4aa3f0" stroke-width="2"/><line x1="' + px(xb).toFixed(1) + '" x2="' + px(xb).toFixed(1) + '" y1="' + py(line(xa)).toFixed(1) + '" y2="' + py(line(xb)).toFixed(1) + '" stroke="#4aa3f0" stroke-width="3"/><text x="' + (px(xb) + 5).toFixed(1) + '" y="' + (py((line(xa) + line(xb)) / 2) + 3).toFixed(1) + '" fill="#4aa3f0" font-size="10.5" font-weight="700">β</text></g>'; }
+  const un = unitOf(A.k);
+  g += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" font-weight="' + (c === 'x' ? 700 : 500) + '" fill="' + (c === 'x' ? '#5eead4' : '#9ba6b1') + '">X · ' + esc(vName(A.k)) + (un ? ' (' + esc(un) + ')' : '') + '</text>';
+  g += '<text transform="translate(11,' + ((T + H - B) / 2) + ') rotate(-90)" text-anchor="middle" font-size="11" font-weight="' + (c === 'y' ? 700 : 500) + '" fill="' + (c === 'y' ? '#5eead4' : '#9ba6b1') + '">Y · weight error (g)</text>';
+  [x0, S.mx, x1].forEach((x, i) => { g += '<text x="' + px(x).toFixed(1) + '" y="' + (H - B + 13) + '" fill="#6e7882" font-size="9.5" text-anchor="' + (i === 0 ? 'start' : i === 2 ? 'end' : 'middle') + '" font-family="JetBrains Mono,monospace">' + sig3(x) + '</text>'; });
+  g += '</svg>';
+  const hl = k => on(k) ? ' lit' : '', fm = '<div class="eq" aria-label="Y equals beta zero plus beta times X minus mean X plus epsilon"><span class="tk y' + hl('y') + '">Y</span> = <span class="tk o' + hl('b0') + '">β₀</span> + <span class="tk b' + hl('b') + '">β</span> × (<span class="tk y' + hl('x') + '">X</span> − X̄) + <span class="tk r' + hl('e') + '">ε</span></div>';
+  const un2 = un ? ' ' + esc(un) : '';
+  const say = { all: 'Every dot is one bottle. The line is what the conditions alone would predict; the red ticks are what is left.', y: '<b>Y</b> is the thing we want to control: how far each bottle’s weight is from the target, in grams.', x: '<b>X</b> is a condition the machine measures: ' + vName(A.k).toLowerCase() + '. Typical value ' + sig3(S.mx) + un2 + ', swing ±' + sig3(S.sx) + un2 + '.',
+    b0: '<b>β₀</b> is the average error at typical conditions: <b class="mono">' + sg(b0, 2) + ' g</b>. This is what the <b>base closing point</b> removes: ' + (S.my + A.d0 === S.my ? 'move it by ' + dlt(r.delta) + (PCT() ? ' %' : ' ms') + ' this round.' : 'slide the line up or down to see it.'), b: '<b>β</b> is the slope: <b class="mono">' + sg(b, Math.abs(b) < 1 ? 3 : 2) + ' g per 1' + un2 + '</b> of ' + vName(A.k).toLowerCase() + '. This is what <b>following the conditions</b> removes.',
+    e: '<b>ε</b> is the random rest: <b class="mono">±' + f2(rms) + ' g</b> (σ). Valve, product, air. No setpoint can remove it, so it sets the best possible result.' }[c];
+  const best = Math.abs(A.d0) < 1e-9 && Math.abs(A.d1) < 1e-9;
+  const met = '<div class="mrow3"><div><small>Error with no model</small><b class="mono">±' + f2(rms0) + ' g</b></div><div><small>Left over with this line</small><b class="mono ' + (rms <= rmsBest + 1e-6 ? 'y' : '') + '">±' + f2(rms) + ' g</b></div><div><small>Best possible line</small><b class="mono y">±' + f2(rmsBest) + ' g</b></div></div>';
+  return fm + '<div class="say">' + say + '</div>' + g + met + (best ? '' : '<p class="small t2" style="margin:6px 0 0">Your line leaves ' + (rms > rmsBest + 1e-6 ? '<b>' + f2(rms - rmsBest) + ' g more</b> than' : 'the same as') + ' the best fit. The tool finds the best line for you.</p>');
+}
+function anatomyBlock(r) {
+  const S = anaState(r); if (!S) return '';
+  const A = S.A, rg = (v, k) => Math.max(1e-6, v * k);
+  return '<div class="panel" id="ana" data-head="' + r.head + '"><div class="chips" role="group" aria-label="Highlight a part of the equation">' + ANA_CHIPS.map(c => '<button data-act="achip" data-c="' + c[0] + '" aria-pressed="' + (A.chip === c[0]) + '">' + c[1] + '</button>').join('') + '</div>' +
+    (S.ks.length > 1 ? '<div class="chips" role="group" aria-label="Condition to look at" style="margin-top:6px">' + S.ks.map(k => '<button data-act="akey" data-k="' + k + '" aria-pressed="' + (A.k === k) + '">' + vName(k) + '</button>').join('') + '</div>' : '') +
+    '<div id="anaPlot">' + anaPlot(r, S) + '</div>' +
+    '<div class="sl"><label for="ana_b0">Move the line up / down <span class="mute">(β₀)</span></label><input type="range" id="ana_b0" data-ana="d0" min="' + (-3 * S.sy).toFixed(3) + '" max="' + (3 * S.sy).toFixed(3) + '" step="' + (S.sy / 100).toFixed(4) + '" value="' + A.d0 + '"></div>' +
+    '<div class="sl"><label for="ana_b">Tilt the line <span class="mute">(β)</span></label><input type="range" id="ana_b" data-ana="d1" min="' + (-2 * Math.abs(S.b1) - S.sy / (S.sx || 1)).toFixed(4) + '" max="' + (2 * Math.abs(S.b1) + S.sy / (S.sx || 1)).toFixed(4) + '" step="' + (Math.max(Math.abs(S.b1), 0.01) / 100).toFixed(5) + '" value="' + A.d1 + '"></div>' +
+    '<button class="btn block ghost" data-act="abest">Fit the best line</button>' +
+    '<p class="small mute" style="margin-top:8px">The dots are this head’s last ' + S.X.length + ' bottles, moved to today’s closing point so they differ only by conditions. The tool fits flow, pressure, temperature and density together (physics prior + ridge / RLS); this view takes one condition at a time, so the numbers are close but not identical.</p></div>';
+}
+/* ---- what changes to get a better result ---- */
+function histSvg(devNow, dev, t1, t2) {
+  const W = 340, H = 120, L = 8, R = 8, T = 8, B = 22, nb = 25, lim = Math.max(3 * t1, t2 * 1.05), bw = (W - L - R) / nb, cnt = a => { const c = new Array(nb).fill(0); a.forEach(v => { const k = clampv(Math.floor((v + lim) / (2 * lim) * nb), 0, nb - 1); c[k]++; }); return c; };
+  const cn = cnt(devNow), cd = cnt(dev), mx = Math.max.apply(null, cn.concat(cd)) || 1, x = v => L + (v + lim) / (2 * lim) * (W - L - R), y = c => T + (1 - c / mx) * (H - T - B);
+  let g = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="ana" role="img" aria-label="Distribution of bottle weights against tolerance">';
+  g += '<rect x="' + x(-t1).toFixed(1) + '" y="' + T + '" width="' + (x(t1) - x(-t1)).toFixed(1) + '" height="' + (H - T - B) + '" fill="#2dd4bf" opacity=".09"/>' + [-t2, t2].map(v => '<line x1="' + x(v).toFixed(1) + '" x2="' + x(v).toFixed(1) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="#f5b53d" stroke-width="1" stroke-dasharray="3 3"/>').join('') + [-t1, t1].map(v => '<line x1="' + x(v).toFixed(1) + '" x2="' + x(v).toFixed(1) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="#5eead4" stroke-width="1" stroke-dasharray="3 3"/>').join('');
+  g += cd.map((c, i) => c ? '<rect x="' + (L + i * bw + 1).toFixed(1) + '" y="' + y(c).toFixed(1) + '" width="' + (bw - 2).toFixed(1) + '" height="' + (H - B - y(c)).toFixed(1) + '" fill="#2dd4bf" opacity=".6" rx="1.5"/>' : '').join('');
+  g += cn.map((c, i) => c ? '<rect x="' + (L + i * bw + 1).toFixed(1) + '" y="' + y(c).toFixed(1) + '" width="' + (bw - 2).toFixed(1) + '" height="' + (H - B - y(c)).toFixed(1) + '" fill="none" stroke="#9ba6b1" stroke-width="1" rx="1.5" opacity=".9"/>' : '').join('');
+  g += '<line x1="' + x(0).toFixed(1) + '" x2="' + x(0).toFixed(1) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="#eef1f4" stroke-width="1.3"/><text x="' + x(0).toFixed(1) + '" y="' + (H - 7) + '" fill="#eef1f4" font-size="10" text-anchor="middle">target</text><text x="' + x(-t1).toFixed(1) + '" y="' + (H - 7) + '" fill="#5eead4" font-size="9.5" text-anchor="middle">−T1</text><text x="' + x(t1).toFixed(1) + '" y="' + (H - 7) + '" fill="#5eead4" font-size="9.5" text-anchor="middle">+T1</text>';
+  return g + '</svg>';
+}
+function stepsData(r) {
+  const ks = r.comp && r.comp.terms ? r.comp.terms : [], cpNow = lvl(r.aNow), cpBase = lvl(r.aNew), terms = ks.map(t => '<span class="tk b">' + (KC(t) >= 0 ? '+ ' : '− ') + sig3(Math.abs(KC(t))) + ' × (' + vName(t.key) + ' − ' + sig3(t.ref) + ')</span>').join(' ');
+  const hasC = r.hasComp && ks.length, e0 = r.before.err, d = r.action !== 'keep' ? dlt(r.delta) + (PCT() ? ' %' : ' ms') : 'no move';
+  return [
+    { k: 'now', lab: 'Now', st: r.before, dev: devOf(r, 'Now'), eq: 'Closing point = <span class="tk g">' + cpNow + '</span> <span class="mute">(always)</span>', tx: 'Today every bottle uses the same closing point. The average is <b>' + sg(e0, 2) + ' g</b> from target and the weights wander with the conditions.' },
+    { k: 'fix', lab: 'Fix the base', st: r.afterFixed, dev: devOf(r, 'Fixed'), eq: 'Closing point = <span class="tk o">' + cpBase + '</span>', tx: r.action === 'keep' ? 'The average is already centred, so the base stays.' : 'The average error is removed by moving the base <b>' + d + '</b> (a safe step; large needs take several rounds). This is the <span class="o">β₀</span> part.' },
+    { k: 'follow', lab: 'Follow the conditions', st: r.after, dev: devOf(r, 'After'), eq: 'Closing point = <span class="tk o">' + cpBase + '</span> ' + (hasC ? terms : '<span class="mute">(no condition worth following)</span>'), tx: hasC ? 'The closing point now shifts bottle by bottle with ' + ks.map(t => vName(t.key).toLowerCase()).join(', ') + '. The bottles stop drifting with them. This is the <span class="b">β</span> part.' : 'For this head the conditions explain too little weight variation, so nothing is added.' },
+    { k: 'goal', lab: 'After more rounds', st: r.goal, dev: devOf(r, 'Goal'), eq: 'Closing point = <span class="tk o">' + (r.comp && r.comp.aGoal != null ? lvl(r.comp.aGoal) : 'the final base') + '</span> ' + (hasC ? terms : ''), tx: 'If the base keeps moving by safe steps until the average sits on target. What is left (' + f2(r.goal.sd) + ' g) is the random part ε.' }
+  ];
+}
+function stepperBlock(r, fleet, rs) {
+  let S;
+  if (fleet) {
+    const hs = rs.filter(x => x.status !== 'wait' && devOf(x, 'Now')), cat = w => [].concat.apply([], hs.map(x => devOf(x, w))), sm = ST.summary, nc = rs.filter(x => x.hasComp).length, no = rs.filter(x => x.status !== 'wait' && x.action !== 'keep').length;
+    S = [{ lab: 'Now', st: sm.before, dev: cat('Now'), eq: 'Every head keeps its fixed closing point', tx: 'The heads have different averages and all drift with the conditions.' },
+      { lab: 'Fix the base', st: sm.afterFixed, dev: cat('Fixed'), eq: '<span class="tk o">' + no + ' head' + (no === 1 ? '' : 's') + '</span> get a new base closing point', tx: 'Each head’s average is moved toward the target in a safe step.' },
+      { lab: 'Follow the conditions', st: sm.after, dev: cat('After'), eq: '<span class="tk b">' + nc + ' head' + (nc === 1 ? '' : 's') + '</span> also follow flow, pressure, temperature or density', tx: 'The closing point follows the live conditions so weights stop drifting.' },
+      { lab: 'After more rounds', st: sm.goal, dev: cat('Goal'), eq: 'Bases keep converging round after round', tx: 'What is left is random: valve, product, air.' }];
+    S.t1 = mean_(hs.map(x => x.stats.t1)); S.t2 = mean_(hs.map(x => x.stats.t2));
+  } else { S = stepsData(r); S.t1 = r.stats.t1; S.t2 = r.stats.t2; }
+  if (!S[0].dev || S[0].dev.length < 3) return '';
+  const idx = clampv(ST.stepI == null ? 0 : ST.stepI, 0, 3), s = S[idx], b = S[0].st, m = s.st;
+  const vv = (k, f, u) => '<div><small>' + k + '</small><b class="mono' + (idx ? ' y' : '') + '">' + f + (u || '') + '</b></div>';
+  return '<div class="panel" id="stp"><div class="chips four" role="group" aria-label="Step">' + S.map((x, i) => '<button data-act="astep" data-i="' + i + '" aria-pressed="' + (i === idx) + '"><b>' + (i + 1) + '</b>' + x.lab + '</button>').join('') + '</div>' +
+    '<div class="eq lawline">' + s.eq + '</div><div class="say">' + s.tx + '</div>' + histSvg(S[0].dev, s.dev, S.t1, S.t2) +
+    '<div class="legend" style="margin-top:2px"><span><i style="border:1.5px solid var(--t2);background:none"></i>Now</span><span><i style="background:var(--teal)"></i>' + (idx ? s.lab : 'Same as now') + '</span><span><i style="background:rgba(45,212,191,.2)"></i>Inside T1</span></div>' +
+    '<div class="mrow3 four">' + vv('Cpk', cpf(m.cpk)) + vv('Outside T1', (m.pOutT1 * 100).toFixed(1), ' %') + vv('Spread σ', f2(m.sd), ' g') + vv('Giveaway/1,000', f2(m.giveaway), ' kg') + '</div>' +
+    (idx ? '<p class="small t2" style="margin:8px 0 0">Compared with now: Cpk <b class="mono">' + cpf(b.cpk) + ' → ' + cpf(m.cpk) + '</b>, outside T1 <b class="mono">' + (b.pOutT1 * 100).toFixed(1) + ' → ' + (m.pOutT1 * 100).toFixed(1) + ' %</b>.</p>' : '') + '</div>';
+}
+function betterBlock(r) {
+  const su = r.sufficiency, noise = r.noiseShare != null ? Math.round(r.noiseShare * 100) : null, li = [];
+  if (r.action !== 'keep') li.push('<b>Apply the new closing point</b> and weigh at least 100 more bottles, then load the history again. Each round moves the base a safe step closer.');
+  if (r.hasComp) li.push('<b>Have the PLC follow the conditions</b> (see Apply). Without it the spread stays about ' + f2(r.afterFixed.sd) + ' g; with it ' + f2(r.after.sd) + ' g.');
+  if (su && su.need && su.have < su.need) li.push('<b>Collect more data</b>: ' + su.have + ' usable bottles of ' + su.need + ' needed for a confident model.');
+  if (noise != null && noise >= 50) li.push('<b>Look at the head itself</b>: ' + noise + ' % of the spread is random. No setpoint fixes a worn valve, air in the line or product foaming.');
+  if (!li.length) li.push('<b>Nothing to add.</b> Keep running and reload newer data from time to time.');
+  return '<div class="panel"><ul class="checks">' + li.map(x => '<li><span class="m y">●</span><span>' + x + '</span></li>').join('') + '</ul></div>';
+}
+
 /* ---------- views ---------- */
 function installCard() {
   const ios = /iPad|iPhone|iPod/.test(navigator.userAgent), and = /Android/.test(navigator.userAgent);
@@ -484,6 +661,7 @@ function viewResult() {
   h += '<div class="panel hot"><div class="kicker">Projected gain · all heads together</div><h2 style="font-size:20px;margin-top:6px">' + esc(ST.mode === 'fixed' ? sm.headline.replace(/Cpk from [\d.]+ to [\d.]+/, 'Cpk from ' + b.cpk.toFixed(2) + ' to ' + a.cpk.toFixed(2)) : sm.headline) + '</h2><p class="small t2">Replay of the last ' + f0(sm.bottles) + ' weighed bottles: <b>Now</b> = the same bottles at today’s setpoint, <b>Proposed</b> = the same bottles with the proposal. A projection, not a measurement. Tolerance T1 ±' + f2(rs[0].stats.t1) + ' g, T2 ±' + f2(rs[0].stats.t2) + ' g (<button class="btn link" style="min-height:0;padding:0;font-size:inherit" data-act="step" data-v="data">change</button>).</p></div>';
   const nch = rs.filter(r => r.status !== 'wait' && (r.action !== 'keep' || r.hasComp)).length;
   h += (nch ? '<div class="panel todo"><div><b>' + nch + ' head' + (nch > 1 ? 's' : '') + ' to change</b><p class="small t2">Open Apply to get the exact values to type on the machine.</p></div><button class="btn pri" data-act="step" data-v="apply">Show me what to enter →</button></div>' : '<div class="panel"><b>Nothing to change right now</b><p class="small t2">All heads are on target. Load newer data after more production to check again.</p></div>') + modeSeg();
+  h += sec('Your machine', machineView(rs)) + howStrip(sm, rs);
   h += '<div class="grid g4">' + tile('Capability Cpk', b.cpk, a.cpk, gl.cpk, cpf, '', 2, 'up', '') + tile('Bottles outside T1', b.pOutT1 * 100, a.pOutT1 * 100, gl.pOutT1 * 100, x => x.toFixed(1), '%', 1, 'down', 'pts') + tile('Weight spread σ', b.sd, a.sd, gl.sd, f2, 'g', 2, 'down') + tile('Giveaway / 1,000', b.giveaway, a.giveaway, gl.giveaway, f2, 'kg', 2, 'down', 'kg') + '</div>';
   h += '<div class="help"><b>Reading this:</b> <b>Cpk</b> says how comfortably the bottles fit inside T1: 1.33 or more is capable, 1.0 just fits, below 1.0 bottles regularly fall outside. Teal always means <b>proposed</b>, grey means <b>now</b>.</div><div class="stats3" style="margin:12px 0"><span class="pill s-adjust">' + sm.counts.adjust + ' adjust</span><span class="pill s-ok">' + sm.counts.ok + ' on target</span><span class="pill s-check">' + sm.counts.check + ' check</span><span class="pill s-wait">' + sm.counts.wait + ' waiting</span><span>' + nc + ' head' + (nc === 1 ? '' : 's') + ' can follow flow, pressure, temperature or density</span></div>';
   h += sec('Candles per head · now vs proposed', '<div class="panel">' + chartCandles(rs) + '</div>', 'Each candle shows where the bottles of one head land. The goal: a short candle sitting on the target line, inside the teal band. Tap a head to open it.');
@@ -491,6 +669,9 @@ function viewResult() {
   h += sec('Capability Cpk per head', '<div class="panel">' + chartCpk(rs) + '</div><details class="panel"><summary>Show as table</summary>' + capTable(rs) + '</details>', 'Cpk is how comfortably the process fits inside T1: 1.0 just fits, 1.33 or more is considered capable. 0 means the average is outside the limits.');
   const dr = [{ label: 'Now', d: decompSum(rs, 'before') }, { label: ST.mode === 'fixed' ? 'Base only' : 'Proposed', d: decompSum(rs, ST.mode === 'fixed' ? 'fixed' : 'after') }, { label: 'Goal', d: decompSum(rs, 'goal') }];
   h += sec('What the algorithm improves', '<div class="panel">' + chartDecomp(dr) + '</div>', 'Mean squared weight error (g²) split into three causes. The base value removes the <b>offset</b>; letting the ' + UNM() + ' follow the conditions removes the <b>blue</b> part. The grey part is random and stays.');
+  h += sec('What changes to get a better result', stepperBlock(null, true, rs), 'Tap the steps. The grey outline is today’s weights; the teal bars are the same bottles replayed with each change.');
+  const cand = rs.filter(r => headDrivers(r).length), pick = cand.find(r => r.head === ST.anaPick) || cand.find(r => r.hasComp) || cand[0];
+  if (pick) h += sec('How the algorithm learns', (cand.length > 1 ? '<div class="row" style="margin:0 0 6px"><label for="anapick">Head</label><select id="anapick">' + cand.map(r => '<option value="' + r.head + '"' + (r.head === pick.head ? ' selected' : '') + '>Head ' + r.head + '</option>').join('') + '</select></div>' : '') + anatomyBlock(pick), 'Weight error against one condition. Tap the chips to see which part of the equation does what, then move the line yourself.');
   h += sec('Why changes are proposed', whyPanel(rs, sm));
   return h;
 }
@@ -505,7 +686,7 @@ function whyPanel(rs, sm) {
 }
 function viewHeads() {
   if (!ST.results.length) return viewData();
-  return modeSeg() + '<div class="grid hgrid" style="grid-template-columns:1fr">' + ST.results.map((r, i) => {
+  return machineView(ST.results) + modeSeg() + '<div class="grid hgrid" style="grid-template-columns:1fr">' + ST.results.map((r, i) => {
     const b = r.before, a = PA(r), done = ST.log.find(l => l.head === r.head && l.to === r.aNew && r.action !== 'keep'), showCmp = b && r.status !== 'wait';
     return '<button class="hcard s-' + r.status + '" data-act="head" data-i="' + i + '"><div class="top2"><span class="hn">Head ' + r.head + '</span><span class="pill s-' + r.status + '">' + STATUS[r.status] + '</span></div>' +
       (r.status === 'wait' ? '<div class="setp t2" style="font-size:16px">Keep ' + lvl(r.aNow) + '</div>' : '<div class="setp">' + (r.action === 'keep' ? (r.hasComp ? 'Base ' : 'Keep ') + lvn(r.aNow) + '<span class="unit"> ' + UT() + '</span>' : lvn(r.aNow) + '<span class="arrow">→</span>' + lvn(r.aNew) + '<span class="unit"> ' + UT() + '</span><span class="d">' + dlt(r.delta) + '</span>') + '</div>') + (ST.mode === 'full' ? followTags(r) : '') +
@@ -534,6 +715,7 @@ function viewHead() {
   h += '<div class="panel ' + (r.status === 'check' ? 'bad' : plan ? 'hot' : '') + '" style="margin-top:14px"><div class="kicker">Proposal</div><div class="setp" style="font-size:26px;margin:6px 0">' + (!changes ? (r.hasComp ? 'Base ' : 'Keep ') + lvn(r.aNow) + '<span class="unit"> ' + UT() + '</span>' : lvn(r.aNow) + '<span class="arrow">→</span>' + lvn(r.aNew) + '<span class="unit"> ' + UT() + '</span><span class="d">' + dlt(r.delta) + '</span>') + '</div>' + (ST.mode === 'full' ? followTags(r) : '') + '<p class="t2">' + esc(r.advice) + '</p>' +
     (r.hasComp && ST.mode === 'full' ? '<pre class="law">' + esc(lawText(r, false)).replace(/^(Anticipation \(ms\)|Closing point \(% of setpoint\)) = ([\d.]+)/, '$1 = <b>$2</b>') + '</pre>' : '') +
     (plan ? '<button class="btn pri block" data-act="copyone">Copy for the PLC</button><button class="btn block" data-act="applied">I applied this on the machine</button>' : '') + '</div>';
+  if (cmp) h += headVisual(r);
   if (cmp) { const cd = chartCandleHead(r, 'c' + r.head), ln = lineHead(r, 'l' + r.head); if (cd) h += sec('Candles over time', '<div class="panel flat"><div class="pad">' + cd + '</div></div>', 'Bottles grouped in the order they were filled. Tap or drag across the groups to read each one.'); if (ln) h += sec('Trend over time', '<div class="panel flat"><div class="pad">' + ln + '</div></div>', 'Rolling average and spread. You want lines inside the teal band and low.'); }
   if (cmp) h += sec('Dosing now vs proposed', '<div class="panel flat"><div class="pad">' + modeSeg() + '</div><div class="pad">' + chartHead(r, 'h' + r.head) + '</div></div>', 'Drag a finger across the chart to read any bottle. Top: the weight. Middle: the ' + UNM() + ' – grey is what the PLC applied, teal is what the proposal would apply bottle by bottle. Below: the conditions it reacts to.');
   else if (r.series && r.series.length > 5) h += sec('Weights so far', '<div class="panel flat"><div class="pad">' + chartHead(r, 'h' + r.head) + '</div></div>');
@@ -542,6 +724,7 @@ function viewHead() {
       bvpRow('Average weight', f1(st.target + b.err) + ' g', f1(st.target + a.err) + ' g') + bvpRow('Error vs target', sg(b.err, 2) + ' g', sg(a.err, 2) + ' g') + bvpRow('Too heavy', pc(b.pHeavy) + ' %', pc(a.pHeavy) + ' %', 'giveaway') + bvpRow('Too light', pc(b.pLight) + ' %', pc(a.pLight) + ' %', 'reject risk') + bvpRow('Giveaway per 1,000', f2(b.giveaway) + ' kg', f2(a.giveaway) + ' kg') + bvpRow('Spread σ', f2(b.sd) + ' g', f2(a.sd) + ' g', r.hasComp ? 'reduced by following conditions' : 'a fixed setpoint cannot change it') + bvpRow('Base ' + UNM(), lvl(r.aNow), lvl(r.aNew)) + '</div></div>');
     h += sec('Capability', '<div class="panel">' + chartCap(r) + '</div>', 'How the weights are distributed against the tolerance limits. A narrow curve centred between −T1 and +T1 is a capable process.');
   }
+  if (cmp && r.stats) { const sb = stepperBlock(r, false); if (sb) h += sec('What changes to get a better result', sb, 'Tap the steps to see what each change does to the weights of this head.') + betterBlock(r); const an = anatomyBlock(r); if (an) h += sec('Anatomy of the fit', an, 'How the tool separates what conditions explain from what is random.'); }
   if (r.trace && r.trace.length) h += sec('Why this suggestion', '<div class="panel"><ol class="trace">' + r.trace.map(t => '<li><div><b>' + esc(t.t.replace(/^\d+ · /, '')) + '</b><span>' + esc(t.x) + '</span></div></li>').join('') + '</ol></div>');
   if (r.comp && r.decomp) {
     h += sec('What influences the weight', '<div class="panel">' + influenceRows(r) + '<p class="small mute" style="margin-top:8px">Variables that move together (for example flow and pressure) share their effect, so the split between them is approximate.</p></div>');
@@ -619,6 +802,10 @@ document.addEventListener('click', e => {
   else if (a === 'learn') runAnalysis();
   else if (a === 'tolreset') { ST.tol = { t1: ST.tol.file.t1, t2: ST.tol.file.t2, file: ST.tol.file, user: false }; render(); }
   else if (a === 'head') { ST.headSel = +b.dataset.i; ST.view = 'head'; render(); window.scrollTo(0, 0); }
+  else if (a === 'achip') { const r = anaHead(); if (r) { anaState(r); ST.ana.chip = b.dataset.c; anaRedraw(r, true); } }
+  else if (a === 'akey') { const r = anaHead(); if (r) { anaState(r); ST.ana.k = b.dataset.k; ST.ana.d0 = 0; ST.ana.d1 = 0; anaRedraw(r, true); } }
+  else if (a === 'abest') { const r = anaHead(); if (r) { anaState(r); ST.ana.d0 = 0; ST.ana.d1 = 0; anaRedraw(r, true); } }
+  else if (a === 'astep') { ST.stepI = +b.dataset.i; const y = window.scrollY; render(); window.scrollTo(0, y); }
   else if (a === 'back') { ST.view = 'heads'; render(); }
   else if (a === 'copyone') { const r = ST.results[ST.headSel]; showText('Head ' + r.head, plcText(r)); }
   else if (a === 'copyall') showText('All heads', allText());
@@ -628,8 +815,12 @@ document.addEventListener('click', e => {
   else if (a === 'reset') { ST.settings = Object.assign({}, C.DEFAULTS); render(); toast('Defaults restored'); }
   else if (a === 'forget') { kvDel('session'); ST.saved = null; toast('Deleted'); }
 });
+function anaHead() { const el = $('#ana'); if (!el) return null; return ST.results.find(r => r.head === +el.dataset.head); }
+function anaRedraw(r, full) { const el = $('#ana'); if (!el) return; if (full) { const y = window.scrollY; el.outerHTML = anatomyBlock(r); window.scrollTo(0, y); } else { const S = anaState(r); $('#anaPlot').innerHTML = anaPlot(r, S); } }
+document.addEventListener('input', e => { const t = e.target; if (t.dataset && t.dataset.ana) { const r = anaHead(); if (!r) return; anaState(r); ST.ana[t.dataset.ana] = parseFloat(t.value) || 0; anaRedraw(r, false); } });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.id === 'anapick') { ST.anaPick = +t.value; const y = window.scrollY; render(); window.scrollTo(0, y); return; }
   if (t.id === 'file') { const f = t.files && t.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { if (loadText(String(rd.result), f.name, false)) render(); }; rd.onerror = () => toast('Could not read that file'); rd.readAsText(f); t.value = ''; }
   else if (t.dataset && t.dataset.map) { const k = t.dataset.map; if (t.value === '') delete ST.map[k]; else ST.map[k] = parseInt(t.value, 10); ST.tol = null; ST.unit = detect(); if (!C.missingRequired(ST.map, ST.unit).length) prepare(); render(); }
   else if (t.id === 'unitsel') { ST.unitOverride = t.value; ST.unit = detect(); ST.tol = null; if (!C.missingRequired(ST.map, ST.unit).length) prepare(); render(); }

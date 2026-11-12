@@ -12,6 +12,12 @@ const cw=await p.evaluate(()=>document.documentElement.scrollWidth);ok(cw<=w+1,n
 ok(await p.evaluate(()=>document.querySelectorAll('svg.ch').length>=3),name+' charts present');
 ok(await p.evaluate(()=>/Cpk/.test(document.body.innerText)),name+' Cpk visible');
 ok(await p.evaluate(()=>document.querySelectorAll('svg[data-line]').length===1),name+' machine line chart');
+ok(await p.evaluate(()=>document.querySelectorAll('.mach .mh svg').length>=5&&/Product tank/.test(document.body.innerText)),name+' physical machine view with heads');
+ok(await p.evaluate(()=>/What changes to get a better result/i.test(document.body.innerText)&&!!document.querySelector('#stp')),name+' steps explainer');
+{const b0=await p.evaluate(()=>document.querySelector('#stp svg.ana').outerHTML);await p.evaluate(()=>document.querySelector('[data-act=astep][data-i="2"]').click());ok(b0!==await p.evaluate(()=>document.querySelector('#stp svg.ana').outerHTML),name+' step changes the histogram');}
+ok(await p.evaluate(()=>!!document.querySelector('#ana svg.ana')),name+' anatomy chart');
+{const e0=await p.evaluate(()=>document.querySelector('#anaPlot').innerHTML);await p.evaluate(()=>{const s=document.querySelector('#ana_b0');s.value=s.max;s.dispatchEvent(new Event('input',{bubbles:true}))});ok(e0!==await p.evaluate(()=>document.querySelector('#anaPlot').innerHTML),name+' moving the line redraws');
+ await p.evaluate(()=>document.querySelector('[data-act=achip][data-c=b0]').click());ok(await p.evaluate(()=>document.querySelector('#ana .eq .tk.o.lit')!==null&&!/NaN|undefined/.test(document.querySelector('#ana').innerText)),name+' chip lights β₀');}
 ok(await p.evaluate(()=>/Candles per head/i.test(document.body.innerText)&&/Capable|Marginal|Not capable/.test(document.body.innerText)),name+' candles + verdict');
 // head detail
 await p.evaluate(()=>document.querySelector('[data-act=step][data-v=heads]').click());

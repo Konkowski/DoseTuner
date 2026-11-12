@@ -15,6 +15,8 @@ Drop in your PLC history. Get a safe, explained correction for every head. Runs 
 
 <img src="docs/img/mobile-overview.png" alt="DoseTuner overview on a phone" width="260"> &nbsp; <img src="docs/img/mobile-head.png" alt="Per-head view" width="260">
 
+<p align="center"><img src="docs/img/mobile-machine.png" alt="The machine: tank, valves and bottles, one per head" width="240"> &nbsp; <img src="docs/img/mobile-steps.png" alt="What changes to get a better result" width="240"> &nbsp; <img src="docs/img/mobile-anatomy.png" alt="Anatomy of the fit: Y = β₀ + β·(X − X̄) + ε" width="240"></p>
+
 </div>
 
 ---
